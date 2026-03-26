@@ -1,11 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { marked } from 'marked';
+
 import type { ReviewPayload } from '@/api/analyze';
 
-defineProps<{
+const props = defineProps<{
   review: ReviewPayload | null;
   reviewLoading?: boolean;
   reviewError?: string | null;
 }>();
+
+const html = computed(() => {
+  const t = props.review?.text;
+  if (!t) {
+    return '';
+  }
+  return marked.parse(t, { async: false }) as string;
+});
 </script>
 
 <template>
@@ -20,14 +31,11 @@ defineProps<{
     <p v-else-if="reviewError && !review" class="review-err" role="alert">
       {{ reviewError }}
     </p>
-    <template v-else-if="review">
-      <div class="badges">
-        <span class="badge" :class="review.mode">
-          {{ review.mode === 'llm' ? 'LLM 生成' : '模板占位' }}
-        </span>
-      </div>
-      <pre class="text">{{ review.text }}</pre>
-    </template>
+    <div
+      v-else-if="review"
+      class="text md-body"
+      v-html="html"
+    />
     <p v-else class="muted">尚无综述；请先完成检索。</p>
   </div>
 </template>
@@ -42,40 +50,68 @@ defineProps<{
   border-radius: var(--radius);
 }
 
-.badges {
-  margin-bottom: 0.65rem;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-
-  &.template {
-    background: var(--surface-elevated);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-
-  &.llm {
-    background: #e3f2fd;
-    color: var(--accent);
-    border: 1px solid #90caf9;
-  }
-}
-
-.text {
+.md-body {
   margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: inherit;
-  color: var(--text);
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  color: var(--text);
+  word-break: break-word;
+
+  :deep(h2) {
+    margin: 1.1rem 0 0.45rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.25rem;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  :deep(h3) {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  :deep(p) {
+    margin: 0.45rem 0;
+  }
+
+  :deep(ul),
+  :deep(ol) {
+    margin: 0.35rem 0 0.5rem;
+    padding-left: 1.35rem;
+  }
+
+  :deep(li) {
+    margin: 0.2rem 0;
+  }
+
+  :deep(strong) {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  :deep(blockquote) {
+    margin: 0.5rem 0;
+    padding: 0.35rem 0.65rem;
+    border-left: 3px solid var(--accent);
+    background: rgba(21, 101, 192, 0.06);
+    color: var(--muted);
+  }
+
+  :deep(code) {
+    font-size: 0.86em;
+    background: var(--surface);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
 }
 
 .muted {

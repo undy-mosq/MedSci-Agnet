@@ -17,5 +17,5 @@ llm_model = gpt-4o-mini
 frontend_dist_path =
 
 http_timeout_seconds = 60
-max_analyze_results = 200
+max_analyze_results = 500
 pubmed_retry_sleep_seconds = 1.0

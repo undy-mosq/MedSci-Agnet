@@ -34,9 +34,16 @@ function onSubmit() {
   <header class="search-bar">
     <h1 class="title">检索</h1>
     <p class="hint">
-      数据来自 NCBI E-utilities；影响因子与 JCR 分区来自本地映射表
-      <code>data/journal_metrics.json</code>，未命中期刊显示为未知。每次分析固定检索
-      <strong>100</strong> 条文献。
+      数据来自 NCBI E-utilities；影响因子与 JCR 分区来自
+      <a
+        class="link-map"
+        href="/journal-metrics.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        >本地映射表</a
+      >，未命中期刊显示为未知。每次分析固定检索
+      <strong>500</strong> 条文献；综述（LLM）仅依据近 5 年高影响因子排序后的 Top100
+      题录生成，与下方「近 5 年高影响因子文献」表一致。
     </p>
     <form class="row" @submit.prevent="onSubmit">
       <input
@@ -75,6 +82,18 @@ function onSubmit() {
   font-size: 0.82rem;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.link-map {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+
+  &:hover {
+    text-decoration: underline;
+    border-bottom-color: var(--accent);
+  }
 }
 
 code {

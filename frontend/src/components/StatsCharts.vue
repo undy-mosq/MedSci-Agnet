@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import type { CorpusStats } from '@/api/analyze';
+import { quartileSectorColor } from '@/utils/chartPalette';
 
 const C_TEXT = '#37474f';
 const C_MUTED = '#78909c';
@@ -92,8 +93,11 @@ const quartileOption = computed(() => {
     };
   }
   const entries = Object.entries(s.quartile_counts);
-  const data = entries.map(([name, value]) => ({ name, value }));
-  const pieColors = ['#1565c0', '#1976d2', '#42a5f5', '#90caf9', '#78909c'];
+  const data = entries.map(([name, value]) => ({
+    name,
+    value,
+    itemStyle: { color: quartileSectorColor(name) },
+  }));
   return {
     backgroundColor: 'transparent',
     textStyle: { color: C_TEXT },
@@ -113,7 +117,6 @@ const quartileOption = computed(() => {
         radius: ['36%', '62%'],
         data,
         label: { color: C_TEXT },
-        color: pieColors,
       },
     ],
   };

@@ -94,7 +94,7 @@ def _load_ini_dict(path: Path) -> dict[str, str | float | int | Path | None]:
         "llm_model": str_default("llm_model", "gpt-4o-mini"),
         "frontend_dist_path": _resolve_path(fd_raw, _default_dist_path()),
         "http_timeout_seconds": float_default("http_timeout_seconds", 60.0),
-        "max_analyze_results": int_default("max_analyze_results", 200),
+        "max_analyze_results": int_default("max_analyze_results", 500),
         "pubmed_retry_sleep_seconds": float_default(
             "pubmed_retry_sleep_seconds",
             1.0,
@@ -114,7 +114,7 @@ class Settings(BaseModel):
     llm_model: str = "gpt-4o-mini"
     frontend_dist_path: Path = Field(default_factory=_default_dist_path)
     http_timeout_seconds: float = 60.0
-    max_analyze_results: int = 200
+    max_analyze_results: int = 500
     pubmed_retry_sleep_seconds: float = 1.0
 
 

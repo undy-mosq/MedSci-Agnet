@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 MAP_SYSTEM_RESERVED = 450
 MAP_USER_PREFIX = (
-    "Below is one batch of biomedical article records. "
+    "Below is one batch of biomedical article records for systematic synthesis. "
     "Each record is Title + Abstract.\n\n"
 )
 MAP_USER_SUFFIX = ""

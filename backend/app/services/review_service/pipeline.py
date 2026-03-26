@@ -10,10 +10,12 @@ from app.models.schemas import CorpusStats, ReviewPayload
 from app.services.review_service.batching import (
     batch_records_for_map,
     final_summaries_token_budget,
+    format_record,
     needs_intermediate_reduce,
     split_text_by_token_budget,
 )
 from app.services.review_service.llm_chains import (
+    build_direct_chain,
     build_final_chain,
     build_map_chain,
     build_reduce_chain,
@@ -23,12 +25,13 @@ from app.services.review_service.template import template_review
 
 logger = logging.getLogger(__name__)
 
+# 题录拼接总字符数低于此阈值时，单次调用生成综述，不走 Map/Reduce。
+_CORPUS_DIRECT_MAX_CHARS = 5000
 
-def _truncate_review_text(text: str) -> str:
-    text = (text or "").strip()
-    if len(text) > 4000:
-        return text[:4000] + "\n…"
-    return text
+
+def _finalize_review_text(text: str) -> str:
+    """仅去除首尾空白，不做字数截断，以免切断句子。"""
+    return (text or "").strip()
 
 
 def _reduce_until_final_fit(
@@ -83,6 +86,23 @@ def generate_llm_review(
 
     try:
         llm = get_chat_llm(settings)
+        corpus_text = "".join(format_record(r) for r in raw_records)
+        if not corpus_text.strip():
+            return None
+
+        journal_match_rate = f"{stats.journal_match_rate:.2%}"
+        stats_ctx = {
+            "query": query,
+            "total_hits": stats.total_hits,
+            "analyzed_count": stats.analyzed_count,
+            "journal_match_rate": journal_match_rate,
+        }
+
+        if len(corpus_text) < _CORPUS_DIRECT_MAX_CHARS:
+            direct_chain = build_direct_chain(llm)
+            final_text = direct_chain.invoke({**stats_ctx, "corpus_text": corpus_text})
+            return _finalize_review_text(final_text)
+
         map_chain = build_map_chain(llm)
         reduce_chain = build_reduce_chain(llm)
         final_chain = build_final_chain(llm)
@@ -107,17 +127,8 @@ def generate_llm_review(
             reserved_output=1200,
         )
 
-        journal_match_rate = f"{stats.journal_match_rate:.2%}"
-        final_text = final_chain.invoke(
-            {
-                "query": query,
-                "total_hits": stats.total_hits,
-                "analyzed_count": stats.analyzed_count,
-                "journal_match_rate": journal_match_rate,
-                "summaries": combined,
-            }
-        )
-        return _truncate_review_text(final_text)
+        final_text = final_chain.invoke({**stats_ctx, "summaries": combined})
+        return _finalize_review_text(final_text)
     except Exception as e:
         logger.error("LLM 综述流水线失败: %s", e, exc_info=True)
         return None

@@ -32,7 +32,7 @@ def _tokenize(text: str) -> Iterable[str]:
 
 def build_word_frequencies(
     texts: list[str],
-    top_n: int = 200,
+    top_n: int = 100,
 ) -> list[tuple[str, int]]:
     """合并多段文本，统计词频，返回 Top N。
 

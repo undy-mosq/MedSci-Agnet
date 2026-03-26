@@ -3,6 +3,7 @@ import WordCloud from 'wordcloud';
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 import type { WordCloudItem } from '@/api/analyze';
+import { wordcloudColor } from '@/utils/chartPalette';
 
 const props = defineProps<{
   items: WordCloudItem[];
@@ -19,19 +20,17 @@ function draw() {
   const parent = el.parentElement;
   if (parent) {
     el.width = parent.clientWidth;
-    el.height = Math.max(260, Math.floor(parent.clientWidth * 0.45));
+    // 更高画布，词云区域更大
+    el.height = Math.max(420, Math.floor(parent.clientWidth * 0.58));
   }
   const list: [string, number][] = props.items.map((w) => [w.word, w.weight]);
   const maxW = Math.max(...list.map((x) => x[1]), 1);
   WordCloud(el, {
     list,
-    gridSize: 8,
-    weightFactor: (size: number) => 10 + (size / maxW) * 36,
+    gridSize: 6,
+    weightFactor: (size: number) => 16 + (size / maxW) * 56,
     fontFamily: 'Segoe UI, system-ui, sans-serif',
-    color: () => {
-      const colors = ['#1565c0', '#1976d2', '#37474f', '#546e7a', '#607d8b', '#78909c'];
-      return colors[Math.floor(Math.random() * colors.length)] ?? '#1976d2';
-    },
+    color: (word: string) => wordcloudColor(word),
     rotateRatio: 0.15,
     backgroundColor: 'transparent',
   });
@@ -69,7 +68,7 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .wc {
-  min-height: 200px;
+  min-height: 320px;
   padding: 0.75rem;
   background: var(--surface);
   border: 1px solid var(--border);

@@ -58,25 +58,47 @@ def search_ids(
         },
     )
     url = f"{ESEARCH_URL}?{urllib.parse.urlencode(params)}"
-    try:
-        with httpx.Client(timeout=settings.http_timeout_seconds) as client:
-            r = client.get(url)
-    except httpx.HTTPError as e:
-        raise PubMedError(f"esearch 网络错误: {e}") from e
-    if r.status_code == 429:
-        time.sleep(settings.pubmed_retry_sleep_seconds)
-        with httpx.Client(timeout=settings.http_timeout_seconds) as client:
-            r = client.get(url)
-    if r.status_code != 200:
-        raise PubMedError(f"esearch HTTP {r.status_code}")
-    data = r.json()
-    try:
-        id_list = data["esearchresult"]["idlist"]
-        count_str = data["esearchresult"].get("count", "0")
-        total = int(count_str)
-    except (KeyError, ValueError) as e:
-        raise PubMedError(f"esearch 响应格式异常: {e}") from e
-    return id_list, total
+    max_attempts = 3
+    for attempt in range(max_attempts):
+        try:
+            with httpx.Client(timeout=settings.http_timeout_seconds) as client:
+                r = client.get(url)
+        except httpx.HTTPError as e:
+            raise PubMedError(f"esearch 网络错误: {e}") from e
+        if r.status_code == 429:
+            time.sleep(settings.pubmed_retry_sleep_seconds)
+            with httpx.Client(timeout=settings.http_timeout_seconds) as client:
+                r = client.get(url)
+        if r.status_code != 200:
+            raise PubMedError(f"esearch HTTP {r.status_code}")
+        data = r.json()
+        try:
+            esr = data.get("esearchresult")
+            if not isinstance(esr, dict):
+                raise KeyError("esearchresult")
+            if "ERROR" in esr:
+                err_msg = esr["ERROR"]
+                transient = (
+                    "Search Backend" in err_msg or "Database is not supported" in err_msg
+                )
+                if attempt < max_attempts - 1 and transient:
+                    logger.warning(
+                        "esearch 暂态错误，将重试 (%s/%s): %s",
+                        attempt + 1,
+                        max_attempts,
+                        err_msg,
+                    )
+                    time.sleep(settings.pubmed_retry_sleep_seconds)
+                    continue
+                raise PubMedError(f"esearch NCBI 错误: {err_msg}")
+            id_list = esr.get("idlist", [])
+            count_str = esr.get("count", "0")
+            total = int(count_str)
+        except PubMedError:
+            raise
+        except (KeyError, ValueError, TypeError) as e:
+            raise PubMedError(f"esearch 响应格式异常: {e}") from e
+        return id_list, total
 
 
 def fetch_records_xml(

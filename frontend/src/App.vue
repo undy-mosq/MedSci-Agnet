@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import SearchBar from '@/components/SearchBar.vue';
 import StatsCharts from '@/components/StatsCharts.vue';
@@ -8,11 +8,24 @@ import ReviewPanel from '@/components/ReviewPanel.vue';
 import WordCloudView from '@/components/WordCloudView.vue';
 import { useAnalyze } from '@/composables/useAnalyze';
 
-const ANALYZE_MAX_RESULTS = 100;
+const ANALYZE_MAX_RESULTS = 500;
 
 const tab = ref<'dashboard' | 'review'>('dashboard');
 const { loading, error, result, reviewLoading, reviewError, runAnalyze } =
   useAnalyze();
+
+/** 词云权重降序，展示前若干词及频次，供词云下方说明行使用 */
+const wordcloudFrequencyLine = computed(() => {
+  const items = result.value?.wordcloud;
+  if (!items?.length) {
+    return '';
+  }
+  const top = [...items]
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 10);
+  const parts = top.map((w) => `${w.word}（${w.weight}）`);
+  return `高频词（按频次降序，前 ${top.length} 项）：${parts.join('、')}。`;
+});
 
 function onSearch(q: string) {
   runAnalyze(q, ANALYZE_MAX_RESULTS);
@@ -69,6 +82,9 @@ function onSearch(q: string) {
           <div class="block">
             <h2 class="section-title">词云</h2>
             <WordCloudView :items="result.wordcloud" />
+            <p v-if="wordcloudFrequencyLine" class="wordcloud-analysis">
+              {{ wordcloudFrequencyLine }}
+            </p>
           </div>
           <div class="block">
             <h2 class="section-title">近 5 年高影响因子文献（Top100）</h2>
@@ -240,6 +256,13 @@ function onSearch(q: string) {
   color: var(--text);
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--border);
+}
+
+.wordcloud-analysis {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--muted);
 }
 
 .section-review {
