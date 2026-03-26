@@ -10,7 +10,7 @@
 | `api/routes_analyze.py` | `POST /api/analyze`、`GET /api/ping` |
 | `services/pubmed_service.py` | `esearch` + `efetch` 编排 |
 | `services/pubmed_parser.py` | efetch XML → 字典列表 |
-| `services/metrics_service.py` | 加载 `journal_metrics.json`、ISSN/刊名 lookup |
+| `services/metrics_service.py` | 加载 `journal_metrics.json`、ISSN（可选）/刊名 lookup |
 | `services/analytics_service.py` | 年分布、分区、IF 统计、近 5 年 Top100 |
 | `services/text_mining_service.py` | 英文词频（停用词） |
 | `services/review_service/` | 无密钥模板综述 + LangChain LCEL 多段 OpenAI 兼容调用 |

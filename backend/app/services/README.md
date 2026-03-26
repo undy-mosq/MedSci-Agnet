@@ -19,3 +19,4 @@
 ## 修改记录
 
 - 初版：按领域拆分实现。
+- `journal_metrics.json` 可为仅含 `journal_name` / `impact_factor` / `quartile` 的数组；`issn` 可选，`metrics_service` 按刊名与子串匹配。

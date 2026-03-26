@@ -1,4 +1,12 @@
-"""期刊影响因子与分区：本地 JSON 映射查询。"""
+"""期刊影响因子与分区：本地 JSON 映射查询。
+
+JSON 为对象数组（或 ``{"journals": [...]}``），每条支持字段：
+
+- ``journal_name``（或 ``name``）：刊名，用于规范化后索引与匹配
+- ``impact_factor``：数值，可为 null
+- ``quartile``：如 Q1–Q4 或 NA
+- ``issn``：**可选**；若省略则仅能通过刊名（及子串弱匹配）命中。当前仓库数据集可无 ISSN。
+"""
 
 import json
 import logging
@@ -76,13 +84,15 @@ class JournalMetricsRepository:
                 self._by_title[nt] = entry
         self._loaded = True
         logger.info(
-            "期刊指标已加载: issn=%d, title=%d",
-            len(self._by_issn),
+            "期刊指标已加载: 刊名索引=%d, ISSN 索引=%d",
             len(self._by_title),
+            len(self._by_issn),
         )
 
     def lookup(self, issn: str | None, journal_title: str | None) -> dict[str, Any] | None:
         """按 ISSN 优先、其次规范化刊名匹配。
+
+        若本地表未提供 ISSN，仅刊名与子串弱匹配生效。
 
         Returns:
             含 impact_factor, quartile, journal_name；未匹配返回 None。
