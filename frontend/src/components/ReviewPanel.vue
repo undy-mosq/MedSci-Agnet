@@ -3,12 +3,24 @@ import type { ReviewPayload } from '@/api/analyze';
 
 defineProps<{
   review: ReviewPayload | null;
+  reviewLoading?: boolean;
+  reviewError?: string | null;
 }>();
 </script>
 
 <template>
   <div class="panel">
-    <template v-if="review">
+    <div v-if="reviewLoading && !review" class="skeleton" aria-busy="true">
+      <div class="sk-line" />
+      <div class="sk-line short" />
+      <div class="sk-line" />
+      <div class="sk-line mid" />
+      <p class="sk-hint">正在生成综述…</p>
+    </div>
+    <p v-else-if="reviewError && !review" class="review-err" role="alert">
+      {{ reviewError }}
+    </p>
+    <template v-else-if="review">
       <div class="badges">
         <span class="badge" :class="review.mode">
           {{ review.mode === 'llm' ? 'LLM 生成' : '模板占位' }}
@@ -58,5 +70,57 @@ defineProps<{
 
 .muted {
   color: var(--muted);
+}
+
+.review-err {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(127, 29, 29, 0.25);
+  color: #fecaca;
+  font-size: 0.88rem;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.sk-line {
+  height: 0.65rem;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.15) 0%,
+    rgba(148, 163, 184, 0.35) 50%,
+    rgba(148, 163, 184, 0.15) 100%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.2s ease-in-out infinite;
+}
+
+.sk-line.short {
+  width: 72%;
+}
+
+.sk-line.mid {
+  width: 88%;
+}
+
+.sk-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+@keyframes sk-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 </style>

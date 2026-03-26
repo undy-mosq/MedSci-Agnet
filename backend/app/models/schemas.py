@@ -68,6 +68,17 @@ class ReviewPayload(BaseModel):
     mode: Literal["template", "llm"]
 
 
+class ReviewRequest(BaseModel):
+    """综述生成请求：由客户端回传首次分析得到的 stats 与 articles，服务端不重复检索 PubMed。"""
+
+    query: str = Field(..., min_length=1, description="与首次分析一致的检索式")
+    stats: CorpusStats = Field(..., description="语料统计（须与首次分析一致）")
+    articles: list[ArticleItem] = Field(
+        default_factory=list,
+        description="文献列表（综述流水线仅需 title/abstract）",
+    )
+
+
 class AnalyzeResponse(BaseModel):
     """分析接口完整响应。"""
 
@@ -75,11 +86,9 @@ class AnalyzeResponse(BaseModel):
     stats: CorpusStats = Field(default_factory=CorpusStats)
     top100_if_5y: list[ArticleItem] = Field(default_factory=list)
     wordcloud: list[WordCloudItem] = Field(default_factory=list)
-    review: ReviewPayload = Field(
-        default_factory=lambda: ReviewPayload(
-            text="",
-            mode="template",
-        ),
+    review: ReviewPayload | None = Field(
+        default=None,
+        description="首次响应为 null；综述由 POST /api/review 单独生成",
     )
 
 

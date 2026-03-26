@@ -9,7 +9,8 @@ import WordCloudView from '@/components/WordCloudView.vue';
 import { useAnalyze } from '@/composables/useAnalyze';
 
 const tab = ref<'stats' | 'cloud' | 'top' | 'review'>('stats');
-const { loading, error, result, runAnalyze } = useAnalyze();
+const { loading, error, result, reviewLoading, reviewError, runAnalyze } =
+  useAnalyze();
 
 function onSearch(q: string, max: number) {
   runAnalyze(q, max);
@@ -76,7 +77,11 @@ function onSearch(q: string, max: number) {
         <Top100Table :rows="result.top100_if_5y" />
       </section>
       <section v-show="tab === 'review'" class="section">
-        <ReviewPanel :review="result.review" />
+        <ReviewPanel
+          :review="result.review"
+          :review-loading="reviewLoading"
+          :review-error="reviewError"
+        />
       </section>
     </template>
 

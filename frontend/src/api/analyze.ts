@@ -49,7 +49,8 @@ export interface AnalyzeResponse {
   stats: CorpusStats;
   top100_if_5y: ArticleItem[];
   wordcloud: WordCloudItem[];
-  review: ReviewPayload;
+  /** 首次分析为 null；由 postReview 填充 */
+  review: ReviewPayload | null;
 }
 
 function apiBase(): string {

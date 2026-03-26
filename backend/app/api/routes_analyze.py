@@ -1,12 +1,18 @@
-"""分析接口：PubMed 检索 + 统计 + 词云 + 综述。"""
+"""分析接口：PubMed 检索 + 统计 + 词云；综述见 POST /api/review。"""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.config import Settings, get_settings
-from app.models.schemas import AnalyzeRequest, AnalyzeResponse, WordCloudItem
+from app.models.schemas import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    ReviewPayload,
+    ReviewRequest,
+    WordCloudItem,
+)
 from app.services.analytics_service import (
     attach_metrics,
     build_corpus_stats,
@@ -50,15 +56,26 @@ def post_analyze(
         texts.append(t)
     wf = build_word_frequencies(texts, top_n=200)
     wordcloud = [WordCloudItem(word=w, weight=c) for w, c in wf]
-    review = build_review(body.query.strip(), stats, records, settings)
 
     return AnalyzeResponse(
         articles=articles,
         stats=stats,
         top100_if_5y=top100,
         wordcloud=wordcloud,
-        review=review,
+        review=None,
     )
+
+
+@router.post("/review", response_model=ReviewPayload)
+def post_review(
+    body: ReviewRequest,
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> ReviewPayload:
+    """基于已检索的 stats 与题录生成综述（LLM 或模板回退），不重复请求 PubMed。"""
+    raw_records: list[dict[str, Any]] = [
+        {"title": a.title, "abstract": a.abstract or ""} for a in body.articles
+    ]
+    return build_review(body.query.strip(), body.stats, raw_records, settings)
 
 
 @router.get("/ping")

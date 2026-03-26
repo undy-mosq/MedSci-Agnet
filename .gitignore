@@ -1,0 +1,79 @@
+# ========== 本地私密配置 ==========
+config.ini
+.cursor/
+# ========== Python ==========
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 虚拟环境（任选其一名称）
+.venv/
+venv/
+ENV/
+env/
+
+# ========== 测试 / 覆盖率 ==========
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ========== 类型检查 / 工具 ==========
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# ========== 环境与密钥（通用）==========
+.env
+.env.*
+!.env.example
+
+# ========== 编辑器 / IDE ==========
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ========== 操作系统 ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========== 日志与临时文件 ==========
+*.log
+*.tmp
+*.temp
+.cache/
+
+# ========== 可选：运行时数据（若不希望把 data 提交到 Git，取消下面注释）==========
+# data/
+# data/sessions/
+# data/kook_state.json
