@@ -1,0 +1,21 @@
+; 复制本文件为 config.ini 后填写。相对路径均相对于 backend 目录（与 config.ini 同级）。
+
+[app]
+; NCBI E-utilities（可选，提高速率上限）
+; https://www.ncbi.nlm.nih.gov/account/settings/
+ncbi_api_key =
+
+; 留空则使用 ../data/journal_metrics.json（相对 backend）
+journal_metrics_path =
+
+; OpenAI 兼容接口
+llm_api_base = https://api.openai.com/v1
+llm_api_key =
+llm_model = gpt-4o-mini
+
+; 留空则使用 ../frontend/dist
+frontend_dist_path =
+
+http_timeout_seconds = 60
+max_analyze_results = 200
+pubmed_retry_sleep_seconds = 1.0

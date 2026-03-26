@@ -1,0 +1,89 @@
+<script setup lang="ts">
+import WordCloud from 'wordcloud';
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+
+import type { WordCloudItem } from '@/api/analyze';
+
+const props = defineProps<{
+  items: WordCloudItem[];
+}>();
+
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+let ro: ResizeObserver | null = null;
+
+function draw() {
+  const el = canvasRef.value;
+  if (!el || !props.items.length) {
+    return;
+  }
+  const parent = el.parentElement;
+  if (parent) {
+    el.width = parent.clientWidth;
+    el.height = Math.max(260, Math.floor(parent.clientWidth * 0.45));
+  }
+  const list: [string, number][] = props.items.map((w) => [w.word, w.weight]);
+  const maxW = Math.max(...list.map((x) => x[1]), 1);
+  WordCloud(el, {
+    list,
+    gridSize: 8,
+    weightFactor: (size: number) => 10 + (size / maxW) * 36,
+    fontFamily: 'Segoe UI, system-ui, sans-serif',
+    color: () => {
+      const colors = ['#7dd3fc', '#93c5fd', '#a5b4fc', '#c4b5fd', '#67e8f9'];
+      return colors[Math.floor(Math.random() * colors.length)] ?? '#93c5fd';
+    },
+    rotateRatio: 0.15,
+    backgroundColor: 'transparent',
+  });
+}
+
+watch(
+  () => props.items,
+  () => {
+    nextTick(() => draw());
+  },
+  { deep: true },
+);
+
+watch(canvasRef, (el) => {
+  if (el?.parentElement) {
+    ro?.disconnect();
+    ro = new ResizeObserver(() => draw());
+    ro.observe(el.parentElement);
+  }
+});
+
+onBeforeUnmount(() => {
+  ro?.disconnect();
+});
+</script>
+
+<template>
+  <div class="wc">
+    <p v-if="!items.length" class="muted">暂无词频数据（或摘要过少）。</p>
+    <div v-else class="canvas-wrap">
+      <canvas ref="canvasRef" class="canvas" />
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.wc {
+  min-height: 200px;
+}
+
+.canvas-wrap {
+  width: 100%;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+</style>

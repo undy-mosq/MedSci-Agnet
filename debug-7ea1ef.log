@@ -1,0 +1,1 @@
+{"sessionId": "7ea1ef", "timestamp": 1774516051772, "location": "config.py:get_settings", "message": "settings loaded", "data": {"env_file_resolved": "D:\\13056\\web_demo\\.env", "env_file_exists": true, "llm_api_key_set": true, "llm_api_base": "https://api.deepseek.com"}, "hypothesisId": "H2-H3"}

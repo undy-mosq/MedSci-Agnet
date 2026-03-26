@@ -1,0 +1,62 @@
+[
+  {
+    "issn": "0028-0836",
+    "journal_name": "Nature",
+    "impact_factor": 64.8,
+    "quartile": "Q1"
+  },
+  {
+    "issn": "0036-8075",
+    "journal_name": "Science",
+    "impact_factor": 56.9,
+    "quartile": "Q1"
+  },
+  {
+    "issn": "0092-8674",
+    "journal_name": "Cell",
+    "impact_factor": 64.5,
+    "quartile": "Q1"
+  },
+  {
+    "issn": "1471-0056",
+    "journal_name": "Nat Rev Neurosci",
+    "impact_factor": 38.6,
+    "quartile": "Q1"
+  },
+  {
+    "issn": "0896-6273",
+    "journal_name": "Neuron",
+    "impact_factor": 16.2,
+    "quartile": "Q1"
+  },
+  {
+    "issn": "0021-9258",
+    "journal_name": "J Biol Chem",
+    "impact_factor": 4.8,
+    "quartile": "Q2"
+  },
+  {
+    "issn": "2045-2322",
+    "journal_name": "Sci Rep",
+    "impact_factor": 4.6,
+    "quartile": "Q2"
+  },
+  {
+    "issn": "1932-6203",
+    "journal_name": "PLoS One",
+    "impact_factor": 3.7,
+    "quartile": "Q2"
+  },
+  {
+    "issn": "1664-3224",
+    "journal_name": "Front Immunol",
+    "impact_factor": 7.3,
+    "quartile": "Q2"
+  },
+  {
+    "issn": "1471-2105",
+    "journal_name": "BMC Bioinformatics",
+    "impact_factor": 3.0,
+    "quartile": "Q3"
+  }
+]
