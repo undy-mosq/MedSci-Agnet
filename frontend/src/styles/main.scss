@@ -1,14 +1,23 @@
 :root {
-  --bg: #0f1419;
-  --surface: #1a2332;
-  --border: #2d3a4f;
-  --text: #e8edf5;
-  --muted: #8b9bb4;
-  --accent: #3d8bfd;
-  --accent-dim: #2563c2;
-  --danger: #f87171;
-  --radius: 10px;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-elevated: #f5f7fa;
+  --header-bg: #1565c0;
+  --header-text: #ffffff;
+  --border: #cfd8dc;
+  --text: #263238;
+  --muted: #546e7a;
+  --accent: #1565c0;
+  --accent-hover: #0d47a1;
+  --accent-soft: rgba(21, 101, 192, 0.08);
+  --accent-dim: #0d47a1;
+  --danger: #c62828;
+  --danger-bg: #ffebee;
+  --danger-border: #ef9a9a;
+  --danger-text: #b71c1c;
+  --radius: 6px;
+  --radius-sm: 4px;
+  font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
   color: var(--text);
   background: var(--bg);
 }
@@ -22,15 +31,20 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e3a5f 0%, var(--bg) 55%);
+  background: var(--bg);
 }
 
 #app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.25rem 1rem 2rem;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 a {
   color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

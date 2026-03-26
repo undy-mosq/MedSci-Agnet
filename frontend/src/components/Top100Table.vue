@@ -24,7 +24,7 @@ defineProps<{
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in rows" :key="r.pmid">
+          <tr v-for="(r, idx) in rows" :key="r.pmid" :class="{ stripe: idx % 2 === 1 }">
             <td class="mono">
               <a
                 :href="`https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/`"
@@ -80,14 +80,19 @@ defineProps<{
   th {
     position: sticky;
     top: 0;
-    background: #243044;
+    background: #e3f2fd;
     z-index: 1;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
   }
 
-  tr:hover td {
-    background: rgba(61, 139, 253, 0.08);
+  tbody tr.stripe td {
+    background: var(--surface-elevated);
+  }
+
+  tbody tr:hover td {
+    background: var(--accent-soft);
   }
 }
 

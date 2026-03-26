@@ -3,6 +3,11 @@ import { computed } from 'vue';
 
 import type { CorpusStats } from '@/api/analyze';
 
+const C_TEXT = '#37474f';
+const C_MUTED = '#78909c';
+const C_AXIS = '#b0bec5';
+const C_SPLIT = '#eceff1';
+
 const props = defineProps<{
   stats: CorpusStats | null;
 }>();
@@ -12,12 +17,12 @@ const yearOption = computed(() => {
   if (!s || !Object.keys(s.year_distribution).length) {
     return {
       backgroundColor: 'transparent',
-      textStyle: { color: '#e8edf5' },
+      textStyle: { color: C_TEXT },
       title: {
         text: '暂无年份数据',
         left: 'center',
         top: 'middle',
-        textStyle: { color: '#8b9bb4', fontSize: 14 },
+        textStyle: { color: C_MUTED, fontSize: 14 },
       },
     };
   }
@@ -25,15 +30,31 @@ const yearOption = computed(() => {
   const vals = years.map((y) => s.year_distribution[y] ?? 0);
   return {
     backgroundColor: 'transparent',
-    textStyle: { color: '#e8edf5' },
-    tooltip: { trigger: 'axis' },
+    textStyle: { color: C_TEXT },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#fff',
+      borderColor: C_AXIS,
+      textStyle: { color: C_TEXT },
+    },
     grid: { left: 48, right: 16, top: 32, bottom: 40 },
     xAxis: {
       type: 'category',
       data: years,
-      axisLabel: { rotate: years.length > 12 ? 35 : 0 },
+      axisLine: { lineStyle: { color: C_AXIS } },
+      axisLabel: {
+        rotate: years.length > 12 ? 35 : 0,
+        color: C_MUTED,
+      },
     },
-    yAxis: { type: 'value', name: '篇数' },
+    yAxis: {
+      type: 'value',
+      name: '篇数',
+      nameTextStyle: { color: C_MUTED },
+      axisLine: { show: true, lineStyle: { color: C_AXIS } },
+      axisLabel: { color: C_MUTED },
+      splitLine: { lineStyle: { color: C_SPLIT } },
+    },
     series: [
       {
         type: 'bar',
@@ -46,8 +67,8 @@ const yearOption = computed(() => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: '#3d8bfd' },
-              { offset: 1, color: '#1e3a5f' },
+              { offset: 0, color: '#1976d2' },
+              { offset: 1, color: '#0d47a1' },
             ],
           },
         },
@@ -61,28 +82,38 @@ const quartileOption = computed(() => {
   if (!s || !Object.keys(s.quartile_counts).length) {
     return {
       backgroundColor: 'transparent',
-      textStyle: { color: '#e8edf5' },
+      textStyle: { color: C_TEXT },
       title: {
         text: '暂无分区数据',
         left: 'center',
         top: 'middle',
-        textStyle: { color: '#8b9bb4', fontSize: 14 },
+        textStyle: { color: C_MUTED, fontSize: 14 },
       },
     };
   }
   const entries = Object.entries(s.quartile_counts);
   const data = entries.map(([name, value]) => ({ name, value }));
+  const pieColors = ['#1565c0', '#1976d2', '#42a5f5', '#90caf9', '#78909c'];
   return {
     backgroundColor: 'transparent',
-    textStyle: { color: '#e8edf5' },
-    tooltip: { trigger: 'item' },
-    legend: { bottom: 0, textStyle: { color: '#8b9bb4' } },
+    textStyle: { color: C_TEXT },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: '#fff',
+      borderColor: C_AXIS,
+      textStyle: { color: C_TEXT },
+    },
+    legend: {
+      bottom: 0,
+      textStyle: { color: C_MUTED },
+    },
     series: [
       {
         type: 'pie',
         radius: ['36%', '62%'],
         data,
-        label: { color: '#e8edf5' },
+        label: { color: C_TEXT },
+        color: pieColors,
       },
     ],
   };
@@ -172,6 +203,7 @@ const ifText = computed(() => {
   strong {
     font-size: 1.35rem;
     font-variant-numeric: tabular-nums;
+    color: var(--text);
   }
 }
 
@@ -179,7 +211,7 @@ const ifText = computed(() => {
   font-size: 0.88rem;
   line-height: 1.5;
   padding: 0.65rem 0.85rem;
-  background: var(--surface);
+  background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -188,6 +220,7 @@ const ifText = computed(() => {
   display: block;
   font-weight: 600;
   margin-bottom: 0.35rem;
+  color: var(--text);
 }
 
 .muted {

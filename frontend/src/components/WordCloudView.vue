@@ -29,8 +29,8 @@ function draw() {
     weightFactor: (size: number) => 10 + (size / maxW) * 36,
     fontFamily: 'Segoe UI, system-ui, sans-serif',
     color: () => {
-      const colors = ['#7dd3fc', '#93c5fd', '#a5b4fc', '#c4b5fd', '#67e8f9'];
-      return colors[Math.floor(Math.random() * colors.length)] ?? '#93c5fd';
+      const colors = ['#1565c0', '#1976d2', '#37474f', '#546e7a', '#607d8b', '#78909c'];
+      return colors[Math.floor(Math.random() * colors.length)] ?? '#1976d2';
     },
     rotateRatio: 0.15,
     backgroundColor: 'transparent',
@@ -70,6 +70,10 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .wc {
   min-height: 200px;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .canvas-wrap {

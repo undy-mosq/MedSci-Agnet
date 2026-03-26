@@ -36,6 +36,10 @@ defineProps<{
 .panel {
   font-size: 0.88rem;
   line-height: 1.55;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .badges {
@@ -45,18 +49,20 @@ defineProps<{
 .badge {
   display: inline-block;
   padding: 0.2rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
 
   &.template {
-    background: #374151;
-    color: #e5e7eb;
+    background: var(--surface-elevated);
+    color: var(--muted);
+    border: 1px solid var(--border);
   }
 
   &.llm {
-    background: rgba(61, 139, 253, 0.25);
-    color: #bfdbfe;
+    background: #e3f2fd;
+    color: var(--accent);
+    border: 1px solid #90caf9;
   }
 }
 
@@ -66,6 +72,10 @@ defineProps<{
   word-break: break-word;
   font-family: inherit;
   color: var(--text);
+  padding: 0.75rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .muted {
@@ -75,10 +85,10 @@ defineProps<{
 .review-err {
   margin: 0;
   padding: 0.65rem 0.85rem;
-  border-radius: var(--radius);
-  border: 1px solid rgba(248, 113, 113, 0.45);
-  background: rgba(127, 29, 29, 0.25);
-  color: #fecaca;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger-text);
   font-size: 0.88rem;
 }
 
@@ -93,9 +103,9 @@ defineProps<{
   border-radius: 4px;
   background: linear-gradient(
     90deg,
-    rgba(148, 163, 184, 0.15) 0%,
-    rgba(148, 163, 184, 0.35) 50%,
-    rgba(148, 163, 184, 0.15) 100%
+    rgba(21, 101, 192, 0.08) 0%,
+    rgba(21, 101, 192, 0.18) 50%,
+    rgba(21, 101, 192, 0.08) 100%
   );
   background-size: 200% 100%;
   animation: sk-shimmer 1.2s ease-in-out infinite;
