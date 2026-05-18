@@ -1,4 +1,4 @@
-/** 与后端 analytics_service 对齐的语料统计与 Top100（前端合并分批题录时使用）。 */
+/** [2026-05-18] 语料统计与 Top100；主流程在 useAnalyze 中于 analyze 响应后调用。 */
 
 import type { ArticleItem, CorpusStats, IfSummary } from '@/api/analyze';
 

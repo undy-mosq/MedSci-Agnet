@@ -1,4 +1,4 @@
-/** [2026-05-18] POST /api/analyze 类型与封装；API 根路径见 client.ts。 */
+/** [2026-05-18] POST /api/analyze 瘦身为题录+total_hits；统计/词云见 AnalyzeResult。 */
 import { apiUrl } from './client';
 
 export interface AnalyzeRequestBody {
@@ -47,18 +47,24 @@ export interface ReviewPayload {
   mode: 'template' | 'llm';
 }
 
-export interface AnalyzeResponse {
+/** 后端 /api/analyze 原始响应 */
+export interface AnalyzeApiResponse {
   articles: ArticleItem[];
-  stats: CorpusStats;
-  top100_if_5y: ArticleItem[];
-  wordcloud: WordCloudItem[];
+  total_hits: number;
   /** 首次分析为 null；由 postReview 填充 */
   review: ReviewPayload | null;
 }
 
+/** 前端合并统计/词云/Top100 后的完整展示结果 */
+export interface AnalyzeResult extends AnalyzeApiResponse {
+  stats: CorpusStats;
+  top100_if_5y: ArticleItem[];
+  wordcloud: WordCloudItem[];
+}
+
 export async function postAnalyze(
   body: AnalyzeRequestBody,
-): Promise<AnalyzeResponse> {
+): Promise<AnalyzeApiResponse> {
   const url = apiUrl('/api/analyze');
   const res = await fetch(url, {
     method: 'POST',
@@ -84,5 +90,5 @@ export async function postAnalyze(
     }
     throw new Error(detail || `HTTP ${res.status}`);
   }
-  return res.json() as Promise<AnalyzeResponse>;
+  return res.json() as Promise<AnalyzeApiResponse>;
 }

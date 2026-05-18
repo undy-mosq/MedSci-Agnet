@@ -1,3 +1,4 @@
+<!-- [2026-05-18] 使用说明折叠、panel 样式、输入框 focus ring。 -->
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
@@ -31,20 +32,23 @@ function onSubmit() {
 </script>
 
 <template>
-  <header class="search-bar">
+  <header class="search-bar panel">
     <h1 class="title">检索</h1>
-    <p class="hint">
-      数据来自 NCBI E-utilities；影响因子与 JCR 分区来自
-      <a
-        class="link-map"
-        href="/journal-metrics.html"
-        target="_blank"
-        rel="noopener noreferrer"
-        >本地映射表</a
-      >，未命中期刊显示为未知。每次分析固定检索
-      <strong>500</strong> 条文献；综述（LLM）仅依据近 5 年高影响因子排序后的 Top100
-      题录生成，与下方「近 5 年高影响因子文献」表一致。
-    </p>
+    <details class="usage-details">
+      <summary>使用说明</summary>
+      <p class="hint">
+        数据来自 NCBI E-utilities；影响因子与 JCR 分区来自
+        <a
+          class="link-map"
+          href="/journal-metrics.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          >本地映射表</a
+        >，未命中期刊显示为未知。每次分析固定检索
+        <strong>500</strong> 条文献；综述（LLM）仅依据近 5 年高影响因子排序后的 Top100
+        题录生成，与下方「近 5 年高影响因子文献」表一致。
+      </p>
+    </details>
     <form class="row" @submit.prevent="onSubmit">
       <input
         v-model="query"
@@ -64,22 +68,34 @@ function onSubmit() {
 <style scoped lang="scss">
 .search-bar {
   margin-bottom: 0.25rem;
-  padding: 1rem 1.1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: var(--space-md) 1.1rem;
 }
 
 .title {
-  margin: 0 0 0.5rem;
-  font-size: 1.15rem;
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--text);
 }
 
+.usage-details {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-sm);
+
+  summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 600;
+    user-select: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .hint {
-  margin: 0 0 1rem;
-  font-size: 0.82rem;
+  margin: var(--space-sm) 0 0;
   color: var(--muted);
   line-height: 1.55;
 }
@@ -88,54 +104,47 @@ function onSubmit() {
   color: var(--accent);
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
 
   &:hover {
     text-decoration: underline;
-    border-bottom-color: var(--accent);
   }
-}
-
-code {
-  font-size: 0.88em;
-  background: var(--surface-elevated);
-  padding: 0.12em 0.35em;
-  border-radius: 3px;
-  border: 1px solid var(--border);
 }
 
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: var(--space-sm);
   align-items: stretch;
 }
 
 .input {
   flex: 1 1 220px;
   min-width: 0;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: #fff;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: var(--text-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 
   &:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 0;
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 }
 
 .btn {
-  padding: 0.55rem 1.35rem;
+  padding: 0.6rem 1.5rem;
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   cursor: pointer;
+  transition: background var(--transition-fast);
 
   &:hover:not(:disabled) {
     background: var(--accent-hover);

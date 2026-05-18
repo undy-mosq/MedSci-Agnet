@@ -4,18 +4,20 @@
 
 | 文件 | 功能 |
 |------|------|
-| `SearchBar.vue` | 检索式输入、提交分析（每次固定 500 条）；「本地映射表」链接打开 `journal-metrics.html` |
-| `StatsCharts.vue` | ECharts 年份柱状图、分区饼图、指标卡片（浅色主题配色） |
-| `WordCloudView.vue` | 基于 `wordcloud` 画布词云（最多 100 词，高画布 + 较大字号权重） |
-| `Top100Table.vue` | 近 5 年 IF Top100 表格与 PubMed 链接 |
-| `ReviewPanel.vue` | 综述正文 Markdown 渲染（`marked`），无模式徽章 |
+| `SearchBar.vue` | 检索式输入；使用说明 `<details>` 折叠；提交分析（500 条） |
+| `YearRangeBar.vue` | 图表区顶部公共年份双端拉条，驱动全局年份筛选 |
+| `StatsCharts.vue` | 指标卡、IF 摘要、年份/分区/期刊/IF 图；饼图分区筛选 |
+| `WordCloudView.vue` | 词云画布 + 高频词 Top20 表；点击词条 `word-click` |
+| `Top100Table.vue` | 近 5 年 Top100：排序、搜索、摘要展开、高亮匹配词 |
+| `ReviewPanel.vue` | 综述 Markdown 渲染（`marked`） |
 
 ## 完成情况
 
-- 加载/空态/错误在 `App.vue` 与各子组件中处理；主分析阶段在 `App.vue` 展示全页加载面板。
+- 年份筛选由 `YearRangeBar` 统一提供，位于 IF 摘要与图表网格之间；年份分布图不再含底部 dataZoom。
+- 加载/空态/错误在 `App.vue` 与各子组件中处理。
 
 ## 修改记录
 
 - 初版：按 Tab 拆分组件。
-- 改版：`SearchBar` 取消条数输入；图表与表格配色适配浅色主题。
-- 综述：`ReviewPanel` 使用 Markdown 展示；后端题录总字符少于 5000 时单次生成综述（无 Map/Reduce）。
+- [2026-05-18] 前端显示优化：panel 样式、新图表、表格与词云交互。
+- [2026-05-18] 年份公共拉条上移：`YearRangeBar.vue`。

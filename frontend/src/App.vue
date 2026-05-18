@@ -1,5 +1,6 @@
+<!-- [2026-05-18] 筛选联动、articles 下传、顶栏副标题、骨架加载、pill Tab。 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import SearchBar from '@/components/SearchBar.vue';
 import StatsCharts from '@/components/StatsCharts.vue';
@@ -7,6 +8,7 @@ import Top100Table from '@/components/Top100Table.vue';
 import ReviewPanel from '@/components/ReviewPanel.vue';
 import WordCloudView from '@/components/WordCloudView.vue';
 import { useAnalyze } from '@/composables/useAnalyze';
+import { useDashboardFilters } from '@/composables/useDashboardFilters';
 
 const ANALYZE_MAX_RESULTS = 500;
 
@@ -14,21 +16,65 @@ const tab = ref<'dashboard' | 'review'>('dashboard');
 const { loading, error, result, reviewLoading, reviewError, runAnalyze } =
   useAnalyze();
 
-/** 词云权重降序，展示前若干词及频次，供词云下方说明行使用 */
-const wordcloudFrequencyLine = computed(() => {
-  const items = result.value?.wordcloud;
-  if (!items?.length) {
-    return '';
-  }
-  const top = [...items]
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 10);
-  const parts = top.map((w) => `${w.word}（${w.weight}）`);
-  return `高频词（每篇内去重后按出现篇数降序，前 ${top.length} 项）：${parts.join('、')}。`;
+const {
+  yearRange,
+  quartile,
+  hasActiveFilters,
+  filterLabel,
+  filterArticles,
+  setQuartile,
+  setYearRange,
+  clearFilters,
+} = useDashboardFilters();
+
+const wordHint = ref<string | null>(null);
+
+watch(result, () => {
+  clearFilters();
+  wordHint.value = null;
 });
+
+const filteredArticles = computed(() => {
+  if (!result.value?.articles) {
+    return [];
+  }
+  return filterArticles(result.value.articles);
+});
+
+const filteredTop100 = computed(() => {
+  if (!result.value?.top100_if_5y) {
+    return [];
+  }
+  return filterArticles(result.value.top100_if_5y);
+});
+
+const highlightWord = ref<string | null>(null);
 
 function onSearch(q: string) {
   runAnalyze(q, ANALYZE_MAX_RESULTS);
+}
+
+function onQuartileSelect(q: string | null) {
+  setQuartile(q);
+}
+
+function onYearRange(range: [number, number] | null) {
+  setYearRange(range);
+}
+
+function onWordClick(word: string) {
+  highlightWord.value = word;
+  const lower = word.toLowerCase();
+  const hits = filteredTop100.value.filter(
+    (r) =>
+      r.title.toLowerCase().includes(lower) ||
+      (r.abstract?.toLowerCase().includes(lower) ?? false),
+  );
+  if (!hits.length) {
+    wordHint.value = `词「${word}」在近 5 年 Top100 当前视图中无匹配标题/摘要。`;
+  } else {
+    wordHint.value = `词「${word}」匹配 ${hits.length} 条 Top100 记录（已高亮）。`;
+  }
 }
 </script>
 
@@ -36,7 +82,10 @@ function onSearch(q: string) {
   <div class="app">
     <header class="app-header">
       <div class="app-header-inner">
-        <span class="app-header-brand">PubMed 文献分析</span>
+        <div class="app-header-text">
+          <span class="app-header-brand">PubMed 文献分析</span>
+          <span class="app-header-sub">PubMed 检索 · 期刊指标 · 语料可视化</span>
+        </div>
       </div>
     </header>
 
@@ -47,18 +96,22 @@ function onSearch(q: string) {
         {{ error }}
       </div>
 
-      <div v-if="loading" class="loading-panel" aria-busy="true" aria-live="polite">
-        <div class="spinner" />
+      <div v-if="loading" class="loading-panel panel" aria-busy="true" aria-live="polite">
+        <div class="skeleton">
+          <div class="sk-line" />
+          <div class="sk-line short" />
+          <div class="sk-line mid" />
+        </div>
         <p class="loading-title">加载中</p>
         <p class="loading-desc">正在检索并分析文献，请稍候…</p>
       </div>
 
-      <div v-else-if="result && !result.stats.analyzed_count" class="empty">
+      <div v-else-if="result && !result.stats.analyzed_count" class="empty panel">
         未检索到文献，请调整关键词后重试。
       </div>
 
       <template v-else-if="result">
-        <nav class="tabs" aria-label="分析视图">
+        <nav class="tabs panel" aria-label="分析视图">
           <button
             type="button"
             class="tab"
@@ -77,18 +130,43 @@ function onSearch(q: string) {
           </button>
         </nav>
 
+        <div
+          v-if="hasActiveFilters && tab === 'dashboard'"
+          class="filter-banner"
+          role="status"
+        >
+          <span>已筛选：{{ filterLabel }}</span>
+          <button type="button" class="filter-banner-clear" @click="clearFilters">
+            清除筛选
+          </button>
+        </div>
+
         <section v-show="tab === 'dashboard'" class="dashboard">
-          <StatsCharts :stats="result.stats" />
+          <StatsCharts
+            :stats="result.stats"
+            :articles="filteredArticles"
+            :analyzed-total="result.stats.analyzed_count"
+            :has-active-filters="hasActiveFilters"
+            :active-quartile="quartile"
+            :year-range="yearRange"
+            @quartile-select="onQuartileSelect"
+            @year-range="onYearRange"
+          />
           <div class="block">
-            <h2 class="section-title">词云</h2>
-            <WordCloudView :items="result.wordcloud" />
-            <p v-if="wordcloudFrequencyLine" class="wordcloud-analysis">
-              {{ wordcloudFrequencyLine }}
-            </p>
+            <h2 class="section-heading">词云</h2>
+            <p class="block-hint muted">词云基于全量语料；点击词条可高亮 Top100 表格</p>
+            <WordCloudView :items="result.wordcloud" @word-click="onWordClick" />
+            <p v-if="wordHint" class="toast-hint">{{ wordHint }}</p>
           </div>
           <div class="block">
-            <h2 class="section-title">近 5 年高影响因子文献（Top100）</h2>
-            <Top100Table :rows="result.top100_if_5y" />
+            <h2 class="section-heading">近 5 年高影响因子文献（Top100）</h2>
+            <p v-if="hasActiveFilters" class="block-hint muted">
+              筛选后 {{ filteredTop100.length }} / {{ result.top100_if_5y.length }} 条
+            </p>
+            <Top100Table
+              :rows="filteredTop100"
+              :highlight-word="highlightWord"
+            />
           </div>
         </section>
 
@@ -101,7 +179,7 @@ function onSearch(q: string) {
         </section>
       </template>
 
-      <div v-else class="placeholder">
+      <div v-else class="placeholder panel">
         输入检索式并点击「分析」，结果将显示在此处。
       </div>
     </main>
@@ -117,32 +195,43 @@ function onSearch(q: string) {
 
 .app-header {
   background: var(--header-bg);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-sm);
 }
 
 .app-header-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.app-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .app-header-brand {
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--header-text);
   letter-spacing: 0.02em;
+}
+
+.app-header-sub {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .app-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-md);
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 1rem 1rem 2.5rem;
+  padding: var(--space-md) var(--space-md) 2.5rem;
 }
 
 .alert {
@@ -159,39 +248,59 @@ function onSearch(q: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: var(--space-sm);
   min-height: 220px;
   padding: 2rem 1.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
+  width: 100%;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
+.skeleton {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.sk-line {
+  height: 0.65rem;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(21, 101, 192, 0.08) 0%,
+    rgba(21, 101, 192, 0.18) 50%,
+    rgba(21, 101, 192, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.2s ease-in-out infinite;
+}
+
+.sk-line.short {
+  width: 72%;
+}
+
+.sk-line.mid {
+  width: 88%;
+}
+
+@keyframes sk-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
   }
 }
 
 .loading-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   font-weight: 600;
 }
 
 .loading-desc {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   color: var(--muted);
 }
 
@@ -200,30 +309,29 @@ function onSearch(q: string) {
   padding: 1.5rem 1rem;
   text-align: center;
   color: var(--muted);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  font-size: 0.95rem;
-  background: var(--surface);
+  font-size: var(--text-base);
 }
 
 .tabs {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
+  gap: 0.35rem;
+  padding: 0.35rem;
+  align-self: flex-start;
 }
 
 .tab {
-  position: relative;
-  padding: 0.55rem 1.25rem;
-  margin-bottom: -2px;
+  padding: 0.45rem 1.1rem;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
   font-size: 0.92rem;
   font-weight: 500;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 
   &:hover {
     color: var(--accent);
@@ -231,37 +339,31 @@ function onSearch(q: string) {
   }
 
   &.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+    color: #fff;
+    background: var(--accent);
     font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
 }
 
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: var(--space-lg);
 }
 
 .block {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: var(--space-sm);
 }
 
-.section-title {
+.block-hint {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text);
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
 }
 
-.wordcloud-analysis {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.55;
+.muted {
   color: var(--muted);
 }
 

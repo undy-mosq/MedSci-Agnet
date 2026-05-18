@@ -11,9 +11,10 @@
 
 ## 完成情况
 
-- 与前端 `src/api/analyze.ts` 字段对齐；`IfSummary` 使用 `min`/`max` 序列化别名。
+- 与前端 `src/api/analyze.ts` 对齐；`AnalyzeResponse` 仅含 `articles`、`total_hits`、`review`；`CorpusStats` 等供 `/api/review` 使用。
 
 ## 修改记录
 
 - 初版：定义 API 契约。
+- [2026-05-18] `AnalyzeResponse` 移除 stats、wordcloud、top100_if_5y。
 

@@ -84,12 +84,10 @@ class ReviewRequest(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
-    """分析接口完整响应。"""
+    """分析接口响应：PubMed 题录 + 期刊指标 JOIN；统计/词云/Top100 由前端计算。"""
 
     articles: list[ArticleItem] = Field(default_factory=list)
-    stats: CorpusStats = Field(default_factory=CorpusStats)
-    top100_if_5y: list[ArticleItem] = Field(default_factory=list)
-    wordcloud: list[WordCloudItem] = Field(default_factory=list)
+    total_hits: int = Field(default=0, description="PubMed 检索命中总数")
     review: ReviewPayload | None = Field(
         default=None,
         description="首次响应为 null；综述由 POST /api/review 单独生成",

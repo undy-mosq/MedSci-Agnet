@@ -1,4 +1,4 @@
-"""分析接口：PubMed 检索 + 统计 + 词云；综述见 POST /api/review。"""
+"""[2026-05-18] /api/analyze 仅 PubMed + 指标 JOIN；统计/词云由前端计算。综述见 POST /api/review。"""
 
 import json
 import logging
@@ -12,17 +12,11 @@ from app.models.schemas import (
     AnalyzeResponse,
     ReviewPayload,
     ReviewRequest,
-    WordCloudItem,
 )
-from app.services.analytics_service import (
-    attach_metrics,
-    build_corpus_stats,
-    top100_if_recent_years,
-)
+from app.services.analytics_service import attach_metrics, top100_if_recent_years
 from app.services.metrics_service import get_metrics_repository
 from app.services.pubmed_service import PubMedError, search_and_fetch
 from app.services.review_service import build_review
-from app.services.text_mining_service import build_word_frequencies
 
 logger = logging.getLogger(__name__)
 
@@ -49,20 +43,10 @@ def post_analyze(
 
     repo = get_metrics_repository()
     articles = attach_metrics(records, repo.lookup)
-    stats = build_corpus_stats(articles, total_hits)
-    top100 = top100_if_recent_years(articles, years=5)
-    texts: list[str] = []
-    for r in records:
-        t = (r.get("title") or "") + " " + (r.get("abstract") or "")
-        texts.append(t)
-    wf = build_word_frequencies(texts, top_n=100)
-    wordcloud = [WordCloudItem(word=w, weight=c) for w, c in wf]
 
     return AnalyzeResponse(
         articles=articles,
-        stats=stats,
-        top100_if_5y=top100,
-        wordcloud=wordcloud,
+        total_hits=total_hits,
         review=None,
     )
 

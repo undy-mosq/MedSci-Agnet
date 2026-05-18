@@ -1,5 +1,7 @@
+/** [2026-05-18] 扩展设计令牌、panel/section 全局类、渐变页背景。 */
 :root {
-  --bg: #f0f4f8;
+  --bg: linear-gradient(165deg, #e8eef5 0%, #f0f4f8 45%, #f5f7fa 100%);
+  --bg-solid: #f0f4f8;
   --surface: #ffffff;
   --surface-elevated: #f5f7fa;
   --header-bg: #1565c0;
@@ -11,15 +13,35 @@
   --accent-hover: #0d47a1;
   --accent-soft: rgba(21, 101, 192, 0.08);
   --accent-dim: #0d47a1;
+  --success: #2e7d32;
+  --success-bg: #e8f5e9;
+  --warning: #e65100;
+  --warning-bg: #fff3e0;
   --danger: #c62828;
   --danger-bg: #ffebee;
   --danger-border: #ef9a9a;
   --danger-text: #b71c1c;
-  --radius: 6px;
-  --radius-sm: 4px;
+  --text-xs: 0.75rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.05rem;
+  --text-xl: 1.25rem;
+  --space-xs: 0.35rem;
+  --space-sm: 0.65rem;
+  --space-md: 1rem;
+  --space-lg: 1.75rem;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --shadow-sm: 0 1px 3px rgba(38, 50, 56, 0.06);
+  --shadow-md: 0 4px 12px rgba(38, 50, 56, 0.08);
+  --transition-fast: 0.15s ease;
+  --chart-text: #37474f;
+  --chart-muted: #78909c;
+  --chart-axis: #b0bec5;
+  --chart-split: #eceff1;
   font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-solid);
 }
 
 *,
@@ -31,7 +53,9 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--bg-solid);
+  background-image: var(--bg);
+  background-attachment: fixed;
 }
 
 #app {
@@ -47,4 +71,60 @@ a {
   &:hover {
     text-decoration: underline;
   }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-heading {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text);
+  padding-left: 0.65rem;
+  border-left: 3px solid var(--accent);
+  line-height: 1.35;
+}
+
+.filter-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.5rem 0.85rem;
+  font-size: var(--text-sm);
+  color: var(--text);
+  background: var(--accent-soft);
+  border: 1px solid rgba(21, 101, 192, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.filter-banner-clear {
+  margin-left: auto;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--accent-soft);
+  }
+}
+
+.toast-hint {
+  padding: 0.45rem 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
 }
