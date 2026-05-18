@@ -34,18 +34,21 @@ def build_word_frequencies(
     texts: list[str],
     top_n: int = 100,
 ) -> list[tuple[str, int]]:
-    """合并多段文本，统计词频，返回 Top N。
+    """合并多篇题录文本，统计词频，返回 Top N。
+
+    每篇（每段 ``texts`` 元素）内同一词只计一次，再跨篇累加；权重表示
+    **该词出现在多少篇文献中**（文献级频次），而非全文词次总和。
 
     Args:
-        texts: 标题与摘要等。
+        texts: 每篇一条，一般为「标题 + 摘要」拼接串。
         top_n: 最多返回条数。
 
     Returns:
-        (词, 频次) 列表，按频次降序。
+        (词, 篇数) 列表，按篇数降序。
     """
     counter: Counter[str] = Counter()
     for t in texts:
         if not t:
             continue
-        counter.update(_tokenize(t))
+        counter.update(set(_tokenize(t)))
     return counter.most_common(top_n)

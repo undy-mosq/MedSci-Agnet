@@ -1,6 +1,7 @@
-/** POST /api/review 类型与封装。 */
+/** [2026-05-18] POST /api/review 类型与封装；API 根路径见 client.ts。 */
 
 import type { ArticleItem, CorpusStats, ReviewPayload } from './analyze';
+import { apiUrl } from './client';
 
 export interface ReviewRequestBody {
   query: string;
@@ -8,15 +9,10 @@ export interface ReviewRequestBody {
   articles: ArticleItem[];
 }
 
-function apiBase(): string {
-  const b = import.meta.env.VITE_API_BASE ?? '';
-  return b.replace(/\/$/, '');
-}
-
 export async function postReview(
   body: ReviewRequestBody,
 ): Promise<ReviewPayload> {
-  const url = `${apiBase()}/api/review`;
+  const url = apiUrl('/api/review');
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

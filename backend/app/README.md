@@ -4,7 +4,7 @@
 
 | 路径 | 功能 |
 |------|------|
-| `main.py` | FastAPI 实例、CORS、`/health`、注册 `api` 路由、启动时挂载 `frontend/dist` |
+| `main.py` | FastAPI 实例、CORS、`/health`、注册 `api` 路由（纯 API，不托管前端） |
 | `config.py` | `config.ini` + Pydantic：NCBI 密钥、期刊路径、LLM、超时、最大条数 |
 | `models/schemas.py` | 请求/响应 Pydantic 模型 |
 | `api/routes_analyze.py` | `POST /api/analyze`、`GET /api/ping` |
@@ -25,3 +25,4 @@
 
 - 初版：按计划拆分服务与路由。
 - 配置加载由 `.env` / `pydantic-settings` 改为 `backend/config.ini`。
+- [2026-05-18] 移除 `frontend_dist_path` 与 StaticFiles 挂载。

@@ -1,4 +1,5 @@
-/** POST /api/analyze 类型与封装。 */
+/** [2026-05-18] POST /api/analyze 类型与封装；API 根路径见 client.ts。 */
+import { apiUrl } from './client';
 
 export interface AnalyzeRequestBody {
   query: string;
@@ -19,6 +20,8 @@ export interface CorpusStats {
   journal_match_rate: number;
   year_distribution: Record<string, number>;
   quartile_counts: Record<string, number>;
+  /** 年份 -> 分区 -> 篇数，与年份堆积柱一致 */
+  year_quartile_stacked: Record<string, Record<string, number>>;
   if_summary: IfSummary;
 }
 
@@ -53,15 +56,10 @@ export interface AnalyzeResponse {
   review: ReviewPayload | null;
 }
 
-function apiBase(): string {
-  const b = import.meta.env.VITE_API_BASE ?? '';
-  return b.replace(/\/$/, '');
-}
-
 export async function postAnalyze(
   body: AnalyzeRequestBody,
 ): Promise<AnalyzeResponse> {
-  const url = `${apiBase()}/api/analyze`;
+  const url = apiUrl('/api/analyze');
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

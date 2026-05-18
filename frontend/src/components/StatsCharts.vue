@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 import type { CorpusStats } from '@/api/analyze';
-import { quartileSectorColor } from '@/utils/chartPalette';
+import { quartileKeysForStack, quartileSectorColor } from '@/utils/chartPalette';
 
 const C_TEXT = '#37474f';
 const C_MUTED = '#78909c';
@@ -27,8 +27,82 @@ const yearOption = computed(() => {
       },
     };
   }
-  const years = Object.keys(s.year_distribution).sort();
-  const vals = years.map((y) => s.year_distribution[y] ?? 0);
+  const years = Object.keys(s.year_distribution).sort((a, b) => {
+    const na = parseInt(a, 10);
+    const nb = parseInt(b, 10);
+    if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
+    return a.localeCompare(b);
+  });
+  const yq = s.year_quartile_stacked ?? {};
+  const keySet = new Set<string>();
+  for (const y of years) {
+    const row = yq[y];
+    if (row) {
+      Object.keys(row).forEach((k) => keySet.add(k));
+    }
+  }
+  const qKeys = quartileKeysForStack(keySet);
+
+  if (qKeys.length === 0) {
+    const vals = years.map((y) => s.year_distribution[y] ?? 0);
+    return {
+      backgroundColor: 'transparent',
+      textStyle: { color: C_TEXT },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: '#fff',
+        borderColor: C_AXIS,
+        textStyle: { color: C_TEXT },
+      },
+      grid: { left: 48, right: 16, top: 32, bottom: 40 },
+      xAxis: {
+        type: 'category',
+        data: years,
+        axisLine: { lineStyle: { color: C_AXIS } },
+        axisLabel: {
+          rotate: years.length > 12 ? 35 : 0,
+          color: C_MUTED,
+        },
+      },
+      yAxis: {
+        type: 'value',
+        name: '篇数',
+        nameTextStyle: { color: C_MUTED },
+        axisLine: { show: true, lineStyle: { color: C_AXIS } },
+        axisLabel: { color: C_MUTED },
+        splitLine: { lineStyle: { color: C_SPLIT } },
+      },
+      series: [
+        {
+          type: 'bar',
+          data: vals,
+          itemStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: '#1976d2' },
+                { offset: 1, color: '#0d47a1' },
+              ],
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  const series = qKeys.map((q) => ({
+    name: q,
+    type: 'bar' as const,
+    stack: 'yearQ',
+    emphasis: { focus: 'series' as const },
+    data: years.map((y) => yq[y]?.[q] ?? 0),
+    itemStyle: { color: quartileSectorColor(q) },
+  }));
+
   return {
     backgroundColor: 'transparent',
     textStyle: { color: C_TEXT },
@@ -38,7 +112,12 @@ const yearOption = computed(() => {
       borderColor: C_AXIS,
       textStyle: { color: C_TEXT },
     },
-    grid: { left: 48, right: 16, top: 32, bottom: 40 },
+    legend: {
+      type: 'scroll',
+      bottom: 0,
+      textStyle: { color: C_MUTED },
+    },
+    grid: { left: 48, right: 16, top: 28, bottom: qKeys.length > 5 ? 56 : 44 },
     xAxis: {
       type: 'category',
       data: years,
@@ -56,25 +135,7 @@ const yearOption = computed(() => {
       axisLabel: { color: C_MUTED },
       splitLine: { lineStyle: { color: C_SPLIT } },
     },
-    series: [
-      {
-        type: 'bar',
-        data: vals,
-        itemStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: '#1976d2' },
-              { offset: 1, color: '#0d47a1' },
-            ],
-          },
-        },
-      },
-    ],
+    series,
   };
 });
 
@@ -164,7 +225,7 @@ const ifText = computed(() => {
     </div>
     <div class="charts">
       <div class="chart-wrap">
-        <h3 class="chart-title">年份分布</h3>
+        <h3 class="chart-title">年份分布（按分区堆积）</h3>
         <v-chart class="chart" :option="yearOption" autoresize />
       </div>
       <div class="chart-wrap">

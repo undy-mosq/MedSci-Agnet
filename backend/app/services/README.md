@@ -9,7 +9,7 @@
 | `pubmed_parser.py` | 解析 PubMed XML，无网络依赖 |
 | `metrics_service.py` | `JournalMetricsRepository`：单例加载 JSON、lookup |
 | `analytics_service.py` | 统计与近 5 年 Top100（按 IF 降序） |
-| `text_mining_service.py` | 词频 Top N |
+| `text_mining_service.py` | 词频 Top N（篇内去重后按「出现篇数」聚合） |
 | `review_service/` | 模板综述与 LangChain LCEL 多段 LLM（Map→可选 Reduce→Final）；见包内 `README.md` |
 
 ## 完成情况

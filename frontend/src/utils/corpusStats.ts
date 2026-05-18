@@ -18,17 +18,23 @@ export function buildCorpusStats(
   totalHits: number,
 ): CorpusStats {
   const yearDistribution: Record<string, number> = {};
+  const yearQuartileStacked: Record<string, Record<string, number>> = {};
   const quartileCounts: Record<string, number> = {};
   const ifValues: number[] = [];
   let matched = 0;
 
   for (const a of articles) {
+    const q = a.quartile ?? '未知';
+    quartileCounts[q] = (quartileCounts[q] ?? 0) + 1;
     if (a.year != null) {
       const yk = String(a.year);
       yearDistribution[yk] = (yearDistribution[yk] ?? 0) + 1;
+      if (!yearQuartileStacked[yk]) {
+        yearQuartileStacked[yk] = {};
+      }
+      const inner = yearQuartileStacked[yk];
+      inner[q] = (inner[q] ?? 0) + 1;
     }
-    const q = a.quartile ?? '未知';
-    quartileCounts[q] = (quartileCounts[q] ?? 0) + 1;
     if (a.impact_factor != null) {
       ifValues.push(a.impact_factor);
       matched += 1;
@@ -61,11 +67,24 @@ export function buildCorpusStats(
     count_matched: matched,
   };
 
-  const yearKeys = Object.keys(yearDistribution).sort();
+  function yearSortKey(k: string): [number, string] {
+    const n = parseInt(k, 10);
+    return Number.isFinite(n) ? [n, k] : [0, k];
+  }
+
+  const yearKeys = Object.keys(yearDistribution).sort((a, b) => {
+    const [na, sa] = yearSortKey(a);
+    const [nb, sb] = yearSortKey(b);
+    return na !== nb ? na - nb : sa.localeCompare(sb);
+  });
 
   const sortedYearDist: Record<string, number> = {};
+  const sortedYq: Record<string, Record<string, number>> = {};
   for (const k of yearKeys) {
     sortedYearDist[k] = yearDistribution[k] ?? 0;
+    if (yearQuartileStacked[k]) {
+      sortedYq[k] = { ...yearQuartileStacked[k] };
+    }
   }
 
   return {
@@ -74,6 +93,7 @@ export function buildCorpusStats(
     journal_match_rate: Math.round(rate * 10000) / 10000,
     year_distribution: sortedYearDist,
     quartile_counts: quartileCounts,
+    year_quartile_stacked: sortedYq,
     if_summary: ifSummary,
   };
 }

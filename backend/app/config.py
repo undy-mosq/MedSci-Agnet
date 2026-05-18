@@ -1,4 +1,4 @@
-"""应用配置：从 backend 目录下的 config.ini 加载。"""
+"""[2026-05-18] 应用配置：从 backend/config.ini 加载；不再包含前端 dist 路径。"""
 
 from configparser import ConfigParser
 from functools import lru_cache
@@ -20,11 +20,6 @@ def _repo_root() -> Path:
 def _default_metrics_path() -> Path:
     """默认期刊指标文件路径。"""
     return _repo_root() / "data" / "journal_metrics.json"
-
-
-def _default_dist_path() -> Path:
-    """默认前端构建产物目录。"""
-    return _repo_root() / "frontend" / "dist"
 
 
 def _config_ini_path() -> Path:
@@ -81,7 +76,6 @@ def _load_ini_dict(path: Path) -> dict[str, str | float | int | Path | None]:
 
     ncbi = opt_str("ncbi_api_key")
     jm_raw = opt_str("journal_metrics_path")
-    fd_raw = opt_str("frontend_dist_path")
 
     return {
         "ncbi_api_key": ncbi,
@@ -92,7 +86,6 @@ def _load_ini_dict(path: Path) -> dict[str, str | float | int | Path | None]:
         ),
         "llm_api_key": opt_str("llm_api_key"),
         "llm_model": str_default("llm_model", "gpt-4o-mini"),
-        "frontend_dist_path": _resolve_path(fd_raw, _default_dist_path()),
         "http_timeout_seconds": float_default("http_timeout_seconds", 60.0),
         "max_analyze_results": int_default("max_analyze_results", 500),
         "pubmed_retry_sleep_seconds": float_default(
@@ -112,7 +105,6 @@ class Settings(BaseModel):
     llm_api_base: str = "https://api.openai.com/v1"
     llm_api_key: str | None = None
     llm_model: str = "gpt-4o-mini"
-    frontend_dist_path: Path = Field(default_factory=_default_dist_path)
     http_timeout_seconds: float = 60.0
     max_analyze_results: int = 500
     pubmed_retry_sleep_seconds: float = 1.0

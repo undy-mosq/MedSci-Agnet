@@ -48,3 +48,16 @@ export function quartileSectorColor(name: string): string {
   if (name === '未知') return '#b0bec5';
   return '#546e7a';
 }
+
+/** 堆积柱系列顺序（自下而上与图例一致） */
+const QUARTILE_STACK_ORDER: string[] = ['Q1', 'Q2', 'Q3', 'Q4', 'NA', 'N/A', '未知'];
+
+/** 将数据中出现的分区名排序为堆积柱用的稳定顺序 */
+export function quartileKeysForStack(allKeys: Iterable<string>): string[] {
+  const set = new Set(allKeys);
+  const fixed = QUARTILE_STACK_ORDER.filter((k) => set.has(k));
+  const rest = [...set]
+    .filter((k) => !QUARTILE_STACK_ORDER.includes(k))
+    .sort((a, b) => a.localeCompare(b));
+  return [...fixed, ...rest];
+}

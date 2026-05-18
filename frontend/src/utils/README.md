@@ -5,7 +5,7 @@
 | 文件 | 功能 |
 |------|------|
 | `corpusStats.ts` | 与后端语料统计 / Top100 对齐的前端合并与计算（分批分析等场景） |
-| `chartPalette.ts` | 词云与「分区分布」饼图共用配色：医疗冷色基调、色相拉开；`wordcloudColor`、`quartileSectorColor` |
+| `chartPalette.ts` | 词云与「分区分布」饼图共用配色；`wordcloudColor`、`quartileSectorColor`、`quartileKeysForStack`（年份堆积柱系列顺序） |
 
 ## 完成情况
 

@@ -51,11 +51,15 @@ class CorpusStats(BaseModel):
     journal_match_rate: float = 0.0
     year_distribution: dict[str, int] = Field(default_factory=dict)
     quartile_counts: dict[str, int] = Field(default_factory=dict)
+    year_quartile_stacked: dict[str, dict[str, int]] = Field(
+        default_factory=dict,
+        description="年份 -> 分区 -> 篇数（用于堆积柱状图）",
+    )
     if_summary: IfSummary = Field(default_factory=IfSummary)
 
 
 class WordCloudItem(BaseModel):
-    """词云用词条与权重。"""
+    """词云用词条；weight 为篇级去重后的出现篇数。"""
 
     word: str
     weight: int

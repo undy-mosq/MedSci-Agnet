@@ -24,7 +24,7 @@ const wordcloudFrequencyLine = computed(() => {
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 10);
   const parts = top.map((w) => `${w.word}（${w.weight}）`);
-  return `高频词（按频次降序，前 ${top.length} 项）：${parts.join('、')}。`;
+  return `高频词（每篇内去重后按出现篇数降序，前 ${top.length} 项）：${parts.join('、')}。`;
 });
 
 function onSearch(q: string) {

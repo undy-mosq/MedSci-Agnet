@@ -1,5 +1,6 @@
 # ========== 本地私密配置 ==========
 config.ini
+*/config.ini
 .cursor/
 # ========== Python ==========
 __pycache__/
@@ -9,7 +10,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/

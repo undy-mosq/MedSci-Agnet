@@ -2,10 +2,12 @@
 
 ## 文件
 
-| 文件 | 功能 |
-|------|------|
-| `__init__.py` | 包标识 |
-| `schemas.py` | `AnalyzeRequest`、`AnalyzeResponse`、`ArticleItem`、`CorpusStats`、`IfSummary`、`WordCloudItem`、`ReviewPayload` 等 |
+
+| 文件            | 功能                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `__init__.py` | 包标识                                                                                                          |
+| `schemas.py`  | `AnalyzeRequest`、`AnalyzeResponse`、`ArticleItem`、`CorpusStats`、`IfSummary`、`WordCloudItem`、`ReviewPayload` 等 |
+
 
 ## 完成情况
 
@@ -14,3 +16,4 @@
 ## 修改记录
 
 - 初版：定义 API 契约。
+

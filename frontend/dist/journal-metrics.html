@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>本地期刊指标映射表</title>
+    <style>
+      :root {
+        --bg: #f5f7fa;
+        --surface: #fff;
+        --text: #1e293b;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --accent: #1565c0;
+        --accent-hover: #0d47a1;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text);
+        background: var(--bg);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.25rem 1rem 2.5rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .sub {
+        margin: 0 0 1rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+      .toolbar label {
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      input[type="search"] {
+        flex: 1 1 200px;
+        min-width: 0;
+        padding: 0.45rem 0.65rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+      input[type="search"]:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 0;
+      }
+      .meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .err {
+        padding: 0.65rem 0.85rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+      }
+      th,
+      td {
+        padding: 0.45rem 0.65rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      tr:hover td {
+        background: #f1f5f9;
+      }
+      .num {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .q {
+        white-space: nowrap;
+      }
+      .pager {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.65rem 0.75rem;
+        border-top: 1px solid var(--border);
+        background: #fafafa;
+        font-size: 0.82rem;
+      }
+      .pager button {
+        padding: 0.35rem 0.75rem;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.82rem;
+      }
+      .pager button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .pager a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .pager a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>本地期刊指标映射表</h1>
+      <p class="sub">数据由后端接口读取当前配置中的期刊指标文件，与主应用分析所用数据源一致。</p>
+      <div id="err" class="err" hidden></div>
+      <div class="toolbar">
+        <label for="q">筛选刊名</label>
+        <input id="q" type="search" placeholder="输入关键词过滤…" autocomplete="off" disabled />
+        <span id="meta" class="meta"></span>
+      </div>
+      <div class="card">
+        <div style="max-height: min(70vh, 560px); overflow: auto">
+          <table>
+            <thead>
+              <tr>
+                <th>刊名</th>
+                <th class="num">影响因子</th>
+                <th class="q">分区</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button type="button" id="prev" disabled>上一页</button>
+          <span id="pageInfo"></span>
+          <button type="button" id="next" disabled>下一页</button>
+          <a href="/">返回主应用</a>
+        </div>
+      </div>
+    </div>
+    <script>
+      const PAGE = 100;
+      let all = [];
+      let filtered = [];
+      let page = 0;
+
+      function showErr(msg) {
+        const el = document.getElementById("err");
+        el.textContent = msg;
+        el.hidden = !msg;
+      }
+
+      function normalizeRow(r) {
+        const name = r.journal_name || r.name || "";
+        const ifv = r.impact_factor;
+        const q = r.quartile ?? "";
+        return { journal_name: String(name), impact_factor: ifv, quartile: String(q) };
+      }
+
+      function render() {
+        const tbody = document.getElementById("tbody");
+        const start = page * PAGE;
+        const slice = filtered.slice(start, start + PAGE);
+        tbody.innerHTML = slice
+          .map(
+            (r) =>
+              `<tr><td>${escapeHtml(r.journal_name)}</td><td class="num">${formatIf(r.impact_factor)}</td><td class="q">${escapeHtml(r.quartile)}</td></tr>`
+          )
+          .join("");
+        const totalPage = Math.max(1, Math.ceil(filtered.length / PAGE));
+        document.getElementById("pageInfo").textContent =
+          `第 ${page + 1} / ${totalPage} 页 · 共 ${filtered.length} 条` +
+          (filtered.length !== all.length ? `（全 ${all.length} 条）` : "");
+        document.getElementById("prev").disabled = page <= 0;
+        document.getElementById("next").disabled = start + PAGE >= filtered.length;
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatIf(v) {
+        if (v === null || v === undefined || v === "") return "—";
+        const n = Number(v);
+        return Number.isFinite(n) ? n.toFixed(1) : escapeHtml(String(v));
+      }
+
+      function applyFilter() {
+        const q = document.getElementById("q").value.trim().toLowerCase();
+        if (!q) {
+          filtered = all.slice();
+        } else {
+          filtered = all.filter((r) => r.journal_name.toLowerCase().includes(q));
+        }
+        page = 0;
+        render();
+      }
+
+      document.getElementById("q").addEventListener("input", applyFilter);
+      document.getElementById("prev").addEventListener("click", () => {
+        if (page > 0) {
+          page--;
+          render();
+        }
+      });
+      document.getElementById("next").addEventListener("click", () => {
+        if ((page + 1) * PAGE < filtered.length) {
+          page++;
+          render();
+        }
+      });
+
+      fetch("/api/journal-metrics")
+        .then((r) => {
+          if (!r.ok) throw new Error("加载失败 (" + r.status + ")");
+          return r.json();
+        })
+        .then((data) => {
+          if (!Array.isArray(data)) throw new Error("数据格式异常");
+          all = data.map(normalizeRow);
+          all.sort((a, b) => {
+            const fa = Number(a.impact_factor);
+            const fb = Number(b.impact_factor);
+            const na = Number.isFinite(fa) ? fa : -1;
+            const nb = Number.isFinite(fb) ? fb : -1;
+            return nb - na;
+          });
+          filtered = all.slice();
+          document.getElementById("q").disabled = false;
+          document.getElementById("meta").textContent = "已加载 " + all.length + " 条";
+          render();
+        })
+        .catch((e) => {
+          showErr(e.message || String(e));
+        });
+    </script>
+  </body>
+</html>
