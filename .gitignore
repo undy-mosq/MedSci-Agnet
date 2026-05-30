@@ -7,7 +7,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-*.ps1
+**/*.ps1
 .Python
 build/
 develop-eggs/
