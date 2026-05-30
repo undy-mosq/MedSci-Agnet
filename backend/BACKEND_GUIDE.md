@@ -1,5 +1,7 @@
 # backend 目录说明
 
+> 仓库总览与启动见根目录 `README.md`。
+
 ## 功能概述
 
 FastAPI 后端：封装 NCBI E-utilities（`esearch` + `efetch`）、本地期刊指标 JOIN、统计分析、词频与综述（模板 / OpenAI 兼容 LLM）。
@@ -35,11 +37,11 @@ npm run dev
 
 浏览器访问 Vite 开发地址（默认 `http://127.0.0.1:5173`）。请求 `/api` 由 Vite 代理到 `http://127.0.0.1:8000`。
 
-生产：`npm run build` 后按 `deploy/README.md` 配置 Nginx，或 `run-prod.ps1`（Vite preview + 代理）本地验证。
+生产：`npm run build` 后按 `deploy/DEPLOYMENT.md` 配置 Nginx，或 `run-prod.ps1`（Vite preview + 代理）本地验证。
 
 ## 子目录与文件
 
-- `app/`：应用包与 `README.md`（模块说明）。
+- `app/`：应用包与 `APP_PACKAGE.md`（模块说明）。
 - `config.ini` / `config.ini.example`：应用配置（密钥、LLM、路径等）。
 - 仓库根 `requirements.txt`：Python 依赖。
 

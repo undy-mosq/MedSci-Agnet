@@ -12,7 +12,7 @@ npm install
 npm run dev
 # 浏览器 http://127.0.0.1:5173 （Vite 代理 /api -> 8000）
 
-# ========== 生产（Nginx 同域，见 deploy/README.md）==========
+# ========== 生产（Nginx 同域，见 deploy/DEPLOYMENT.md）==========
 # 1) cd frontend && npm run build
 # 2) 终端 API：cd backend && .\.venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000
 # 3) 编辑 deploy/nginx.conf 的 root 后启动 Nginx，访问 http://localhost:8080

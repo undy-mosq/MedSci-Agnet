@@ -15,7 +15,7 @@
 | `services/text_mining_service.py` | 英文词频（停用词） |
 | `services/review_service/` | 无密钥模板综述 + LangChain LCEL 多段 OpenAI 兼容调用 |
 
-子目录 `api/`、`models/`、`services/` 另有各自 `README.md`。
+子目录 `api/`、`models/`、`services/` 另有各自 `API_ROUTES.md`、`MODELS.md`、`SERVICES.md`。
 
 ## 完成情况
 
