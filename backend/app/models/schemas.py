@@ -83,6 +83,62 @@ class ReviewRequest(BaseModel):
     )
 
 
+class MetricsEnrichmentInfo(BaseModel):
+    """首轮 analyze 返回的补全任务摘要（不含 MedSci 请求）。"""
+
+    job_id: str | None = Field(
+        default=None,
+        description="补全任务 ID；无待补全或未启用 MedSci 时为 null",
+    )
+    pending_count: int = Field(default=0, description="待 MedSci 补全的去重刊数")
+    needs_enrichment: bool = Field(
+        default=False,
+        description="是否应调用 POST /api/metrics-enrichment/{job_id}/sync",
+    )
+
+
+class MetricsEnrichmentEntry(BaseModel):
+    """补全得到的一条期刊指标。"""
+
+    journal_name: str | None = None
+    issn: str | None = None
+    impact_factor: float | None = None
+    quartile: str | None = None
+    cas_bigclass: str | None = None
+
+
+class MetricsEnrichmentSyncResponse(BaseModel):
+    """POST /api/metrics-enrichment/{job_id}/sync 响应。"""
+
+    job_id: str
+    status: Literal["running", "completed", "cancelled"]
+    sync_enriched_count: int = 0
+    pending_count: int = 0
+    failed_count: int = 0
+    seq: int = 0
+    new_entries: list[MetricsEnrichmentEntry] = Field(default_factory=list)
+    background_started: bool = False
+
+
+class MetricsEnrichmentPollResponse(BaseModel):
+    """GET /api/metrics-enrichment/{job_id} 响应。"""
+
+    job_id: str
+    status: Literal["running", "completed", "cancelled"]
+    pending_count: int = 0
+    failed_count: int = 0
+    seq: int = 0
+    new_entries: list[MetricsEnrichmentEntry] = Field(default_factory=list)
+
+
+class MetricsEnrichmentCancelResponse(BaseModel):
+    """POST /api/metrics-enrichment/{job_id}/cancel 响应。"""
+
+    job_id: str
+    status: Literal["cancelled"]
+    pending_count: int = 0
+
+
 class AnalyzeResponse(BaseModel):
     """分析接口响应：PubMed 题录 + 期刊指标 JOIN；统计/词云/Top100 由前端计算。"""
 
@@ -91,6 +147,10 @@ class AnalyzeResponse(BaseModel):
     review: ReviewPayload | None = Field(
         default=None,
         description="首次响应为 null；综述由 POST /api/review 单独生成",
+    )
+    enrichment: MetricsEnrichmentInfo | None = Field(
+        default=None,
+        description="MedSci 补全任务摘要；指标补全由后续 sync/poll 接口完成",
     )
 
 

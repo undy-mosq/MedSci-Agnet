@@ -1,19 +1,32 @@
-"""[2026-05-18] /api/analyze 仅 PubMed + 指标 JOIN；统计/词云由前端计算。综述见 POST /api/review。"""
+"""[2026-05-19] /api/analyze 本地指标 JOIN；MedSci 补全见 /api/metrics-enrichment。"""
 
 import json
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.config import Settings, get_settings
 from app.models.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
+    MetricsEnrichmentCancelResponse,
+    MetricsEnrichmentEntry,
+    MetricsEnrichmentInfo,
+    MetricsEnrichmentPollResponse,
+    MetricsEnrichmentSyncResponse,
     ReviewPayload,
     ReviewRequest,
 )
 from app.services.analytics_service import attach_metrics, top100_if_recent_years
+from app.services.metrics_enrichment import (
+    cancel_job,
+    collect_unknown_keys,
+    create_job,
+    drain_updates,
+    get_job,
+    run_sync_batch,
+)
 from app.services.metrics_service import get_metrics_repository
 from app.services.pubmed_service import PubMedError, search_and_fetch
 from app.services.review_service import build_review
@@ -28,12 +41,26 @@ def get_app_settings() -> Settings:
     return get_settings()
 
 
+def _build_enrichment_info(
+    job: Any | None,
+    pending_count: int,
+    settings: Settings,
+) -> MetricsEnrichmentInfo:
+    """构造 analyze 响应中的 enrichment 字段。"""
+    needs = pending_count > 0 and settings.medsci_enabled
+    return MetricsEnrichmentInfo(
+        job_id=job.job_id if job and needs else None,
+        pending_count=pending_count,
+        needs_enrichment=needs,
+    )
+
+
 @router.post("/analyze", response_model=AnalyzeResponse)
 def post_analyze(
     body: AnalyzeRequest,
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> AnalyzeResponse:
-    """检索 PubMed 并返回带指标的分析结果。"""
+    """检索 PubMed 并返回带本地指标的分析结果（不访问 MedSci）。"""
     capped = min(body.max_results, settings.max_analyze_results)
     try:
         records, total_hits = search_and_fetch(body.query.strip(), capped, settings)
@@ -43,11 +70,95 @@ def post_analyze(
 
     repo = get_metrics_repository()
     articles = attach_metrics(records, repo.lookup)
+    unknown = collect_unknown_keys(records, repo.lookup)
+    job = create_job(unknown, medsci_enabled=settings.medsci_enabled)
+    enrichment = _build_enrichment_info(job, len(unknown), settings)
 
     return AnalyzeResponse(
         articles=articles,
         total_hits=total_hits,
         review=None,
+        enrichment=enrichment,
+    )
+
+
+@router.post(
+    "/metrics-enrichment/{job_id}/sync",
+    response_model=MetricsEnrichmentSyncResponse,
+)
+def post_metrics_enrichment_sync(
+    job_id: str,
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    limit: int | None = Query(default=None, ge=1, le=50),
+) -> MetricsEnrichmentSyncResponse:
+    """同步批处理 MedSci 补全（默认最多 medsci_batch_size 本）。"""
+    if not settings.medsci_enabled:
+        raise HTTPException(status_code=503, detail="MedSci 补全已禁用")
+    if get_job(job_id) is None:
+        raise HTTPException(status_code=404, detail="补全任务不存在")
+    try:
+        raw = run_sync_batch(job_id, limit=limit, settings=settings)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="补全任务不存在") from None
+    except ValueError as e:
+        msg = str(e)
+        if msg == "completed":
+            raise HTTPException(status_code=409, detail="任务已完成") from e
+        if msg == "cancelled":
+            raise HTTPException(status_code=409, detail="任务已取消") from e
+        raise HTTPException(status_code=400, detail=msg) from e
+
+    entries = [MetricsEnrichmentEntry.model_validate(e) for e in raw["new_entries"]]
+    return MetricsEnrichmentSyncResponse(
+        job_id=raw["job_id"],
+        status=raw["status"],
+        sync_enriched_count=raw["sync_enriched_count"],
+        pending_count=raw["pending_count"],
+        failed_count=raw["failed_count"],
+        seq=raw["seq"],
+        new_entries=entries,
+        background_started=raw["background_started"],
+    )
+
+
+@router.get(
+    "/metrics-enrichment/{job_id}",
+    response_model=MetricsEnrichmentPollResponse,
+)
+def get_metrics_enrichment(
+    job_id: str,
+    since_seq: int = Query(default=0, ge=0),
+) -> MetricsEnrichmentPollResponse:
+    """轮询补全增量。"""
+    try:
+        raw = drain_updates(job_id, since_seq=since_seq)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="补全任务不存在") from None
+    entries = [MetricsEnrichmentEntry.model_validate(e) for e in raw["new_entries"]]
+    return MetricsEnrichmentPollResponse(
+        job_id=raw["job_id"],
+        status=raw["status"],
+        pending_count=raw["pending_count"],
+        failed_count=raw["failed_count"],
+        seq=raw["seq"],
+        new_entries=entries,
+    )
+
+
+@router.post(
+    "/metrics-enrichment/{job_id}/cancel",
+    response_model=MetricsEnrichmentCancelResponse,
+)
+def post_metrics_enrichment_cancel(job_id: str) -> MetricsEnrichmentCancelResponse:
+    """取消后台补全。"""
+    try:
+        raw = cancel_job(job_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="补全任务不存在") from None
+    return MetricsEnrichmentCancelResponse(
+        job_id=raw["job_id"],
+        status="cancelled",
+        pending_count=raw["pending_count"],
     )
 
 

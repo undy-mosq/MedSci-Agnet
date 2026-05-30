@@ -50,7 +50,7 @@ export function quartileSectorColor(name: string): string {
 }
 
 /** 堆积柱系列顺序（自下而上与图例一致） */
-const QUARTILE_STACK_ORDER: string[] = ['Q1', 'Q2', 'Q3', 'Q4', 'NA', 'N/A', '未知'];
+const QUARTILE_STACK_ORDER: string[] = ['Q1', 'Q2', 'Q3', 'Q4', '未知'];
 
 /** 将数据中出现的分区名排序为堆积柱用的稳定顺序 */
 export function quartileKeysForStack(allKeys: Iterable<string>): string[] {

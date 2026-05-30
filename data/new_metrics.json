@@ -1,0 +1,268 @@
+[
+  {
+    "journal_name": "Journal of Immunology Research",
+    "impact_factor": 4.1,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:49:52.613327+00:00",
+    "issn": "2314-8861",
+    "cas_bigclass": "医学 3区"
+  },
+  {
+    "journal_name": "Current Oncology Reports",
+    "impact_factor": 4.7,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:49:54.527157+00:00",
+    "issn": "1523-3790",
+    "cas_bigclass": "医学 3区"
+  },
+  {
+    "journal_name": "Nature Reviews Clinical Oncology",
+    "impact_factor": 78.8,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:49:56.438154+00:00",
+    "issn": "1759-4774",
+    "cas_bigclass": "医学 1区[Top]"
+  },
+  {
+    "journal_name": "Journal of the National Comprehensive Cancer Network",
+    "impact_factor": 13.4,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:49:58.389732+00:00",
+    "issn": "1540-1405",
+    "cas_bigclass": "医学 2区"
+  },
+  {
+    "journal_name": "Current Molecular Pharmacology",
+    "impact_factor": 2.7,
+    "quartile": "Q4",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:00.328207+00:00",
+    "issn": "1874-4672",
+    "cas_bigclass": "生物 4区"
+  },
+  {
+    "journal_name": "PATHOLOGY RESEARCH AND PRACTICE",
+    "impact_factor": 2.8,
+    "quartile": "Q4",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:02.234453+00:00",
+    "issn": "0344-0338",
+    "cas_bigclass": "医学 4区"
+  },
+  {
+    "journal_name": "Frontiers in Immunology",
+    "impact_factor": 7.3,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:04.171401+00:00",
+    "issn": "1664-3224",
+    "cas_bigclass": "医学 2区"
+  },
+  {
+    "journal_name": "AGEING RESEARCH REVIEWS",
+    "impact_factor": 13.1,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:06.059482+00:00",
+    "issn": "1568-1637",
+    "cas_bigclass": "医学 1区[Top]"
+  },
+  {
+    "journal_name": "INTERNATIONAL JOURNAL OF MOLECULAR SCIENCES",
+    "impact_factor": 6.208,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:08.072842+00:00",
+    "issn": "1422-0067",
+    "cas_bigclass": "生物 2区[Top]"
+  },
+  {
+    "journal_name": "CLINICAL OBSTETRICS AND GYNECOLOGY",
+    "impact_factor": 1.5,
+    "quartile": "Q4",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:09.995130+00:00",
+    "issn": "0009-9201",
+    "cas_bigclass": "医学 4区"
+  },
+  {
+    "journal_name": "Current Molecular Pharmacology",
+    "impact_factor": 2.7,
+    "quartile": "Q4",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:12.313379+00:00",
+    "issn": "1874-4672",
+    "cas_bigclass": "生物 4区"
+  },
+  {
+    "journal_name": "Biomaterials Science",
+    "impact_factor": 6.6,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:14.267560+00:00",
+    "issn": "2047-4830",
+    "cas_bigclass": "工程技术 2区"
+  },
+  {
+    "journal_name": "NATURE REVIEWS IMMUNOLOGY",
+    "impact_factor": 100.3,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:16.229615+00:00",
+    "issn": "1474-1733",
+    "cas_bigclass": "医学 1区[Top]"
+  },
+  {
+    "journal_name": "INTERNATIONAL JOURNAL OF SURGICAL PATHOLOGY",
+    "impact_factor": 1.2,
+    "quartile": "Q4",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:18.170050+00:00",
+    "issn": "1066-8969",
+    "cas_bigclass": "医学 4区"
+  },
+  {
+    "journal_name": "tumor biology",
+    "impact_factor": 3.048,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:20.084715+00:00",
+    "issn": "1010-4283",
+    "cas_bigclass": "医学 2区"
+  },
+  {
+    "journal_name": "JOURNAL DER DEUTSCHEN DERMATOLOGISCHEN GESELLSCHAFT",
+    "impact_factor": 3.6,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:22.017655+00:00",
+    "issn": "1610-0379",
+    "cas_bigclass": "医学 3区"
+  },
+  {
+    "journal_name": "FEBS Journal",
+    "impact_factor": 5.4,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:22.901186+00:00",
+    "issn": "1742-464X",
+    "cas_bigclass": "生物 2区"
+  },
+  {
+    "journal_name": "cold spring harbor symposia on quantitative biology",
+    "impact_factor": null,
+    "quartile": "NA",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:24.835568+00:00",
+    "issn": "0091-7451"
+  },
+  {
+    "journal_name": "Annual Review of Biochemistry",
+    "impact_factor": 16.6,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:26.778707+00:00",
+    "issn": "0066-4154",
+    "cas_bigclass": "生物 1区[Top]"
+  },
+  {
+    "journal_name": "BIOCHEMICAL SOCIETY TRANSACTIONS",
+    "impact_factor": 3.9,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:28.669263+00:00",
+    "issn": "0300-5127",
+    "cas_bigclass": "生物 3区"
+  },
+  {
+    "journal_name": "Biochemistry Moscow-Supplement Series B-Biomedical Chemistry",
+    "impact_factor": 0.6,
+    "quartile": "NA",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:30.583218+00:00",
+    "issn": "1990-7508"
+  },
+  {
+    "journal_name": "Essays in Biochemistry",
+    "impact_factor": 6.4,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:32.520186+00:00",
+    "issn": "0071-1365",
+    "cas_bigclass": "生物 3区"
+  },
+  {
+    "journal_name": "ANNALS OF THE RHEUMATIC DISEASES",
+    "impact_factor": 27.4,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:34.470064+00:00",
+    "issn": "0003-4967",
+    "cas_bigclass": "医学 1区[Top]"
+  },
+  {
+    "journal_name": "Frontiers in Molecular Biosciences",
+    "impact_factor": 5.0,
+    "quartile": "NA",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:36.351196+00:00",
+    "issn": "2296-889X"
+  },
+  {
+    "journal_name": "CURRENT BIOLOGY",
+    "impact_factor": 9.2,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:38.776397+00:00",
+    "issn": "0960-9822",
+    "cas_bigclass": "生物 1区[Top]"
+  },
+  {
+    "journal_name": "TRENDS IN BIOCHEMICAL SCIENCES",
+    "impact_factor": 13.8,
+    "quartile": "Q1",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:40.725372+00:00",
+    "issn": "0968-0004",
+    "cas_bigclass": "生物 1区[Top]"
+  },
+  {
+    "journal_name": "seikagaku",
+    "impact_factor": null,
+    "quartile": "NA",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:42.657383+00:00",
+    "issn": "0037-1017"
+  },
+  {
+    "journal_name": "CHROMOSOMA",
+    "impact_factor": 1.6,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:44.568745+00:00",
+    "issn": "0009-5915",
+    "cas_bigclass": "生物 2区"
+  },
+  {
+    "journal_name": "Annual Review of Genetics",
+    "impact_factor": 11.1,
+    "quartile": "Q2",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:46.502090+00:00",
+    "issn": "0066-4197",
+    "cas_bigclass": "生物 2区"
+  },
+  {
+    "journal_name": "CHEMICAL RESEARCH IN TOXICOLOGY",
+    "impact_factor": 4.1,
+    "quartile": "Q3",
+    "source": "medsci",
+    "fetched_at": "2026-05-19T01:50:48.462962+00:00",
+    "issn": "0893-228X",
+    "cas_bigclass": "医学3区"
+  }
+]

@@ -1,4 +1,4 @@
-"""[2026-05-18] 应用配置：从 backend/config.ini 加载；不再包含前端 dist 路径。"""
+"""[2026-05-19] 应用配置：config.ini；含 new_metrics 与 MedSci 补全参数。"""
 
 from configparser import ConfigParser
 from functools import lru_cache
@@ -20,6 +20,11 @@ def _repo_root() -> Path:
 def _default_metrics_path() -> Path:
     """默认期刊指标文件路径。"""
     return _repo_root() / "data" / "journal_metrics.json"
+
+
+def _default_new_metrics_path() -> Path:
+    """MedSci 补全缓存路径。"""
+    return _repo_root() / "data" / "new_metrics.json"
 
 
 def _config_ini_path() -> Path:
@@ -76,10 +81,30 @@ def _load_ini_dict(path: Path) -> dict[str, str | float | int | Path | None]:
 
     ncbi = opt_str("ncbi_api_key")
     jm_raw = opt_str("journal_metrics_path")
+    nm_raw = opt_str("new_journal_metrics_path")
+
+    def bool_default(key: str, default: bool) -> bool:
+        if not cp.has_option(section, key):
+            return default
+        raw = cp.get(section, key, fallback="").strip().lower()
+        if not raw:
+            return default
+        return raw in ("1", "true", "yes", "on")
 
     return {
         "ncbi_api_key": ncbi,
         "journal_metrics_path": _resolve_path(jm_raw, _default_metrics_path()),
+        "new_journal_metrics_path": _resolve_path(nm_raw, _default_new_metrics_path()),
+        "medsci_batch_size": int_default("medsci_batch_size", 10),
+        "medsci_min_interval_seconds": float_default(
+            "medsci_min_interval_seconds",
+            1.0,
+        ),
+        "medsci_enabled": bool_default("medsci_enabled", True),
+        "medsci_client_idle_seconds": float_default(
+            "medsci_client_idle_seconds",
+            30.0,
+        ),
         "llm_api_base": str_default(
             "llm_api_base",
             "https://api.openai.com/v1",
@@ -102,6 +127,11 @@ class Settings(BaseModel):
 
     ncbi_api_key: str | None = None
     journal_metrics_path: Path = Field(default_factory=_default_metrics_path)
+    new_journal_metrics_path: Path = Field(default_factory=_default_new_metrics_path)
+    medsci_batch_size: int = 10
+    medsci_min_interval_seconds: float = 1.0
+    medsci_enabled: bool = True
+    medsci_client_idle_seconds: float = 30.0
     llm_api_base: str = "https://api.openai.com/v1"
     llm_api_key: str | None = None
     llm_model: str = "gpt-4o-mini"

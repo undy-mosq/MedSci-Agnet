@@ -1,8 +1,11 @@
-<!-- [2026-05-18] 排序、搜索、摘要展开、关键词高亮。 -->
+<!-- [2026-05-19] 分区列 NA 显示为未知。 -->
+<!-- [2026-05-19] 词云高亮改为柔和底色，移除左侧竖条。 -->
+<!-- [2026-05-19] 增强高亮对比度，与 hover 区分。 -->
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
 import type { ArticleItem } from '@/api/analyze';
+import { displayQuartile } from '@/utils/quartileDisplay';
 
 const props = defineProps<{
   rows: ArticleItem[];
@@ -65,7 +68,7 @@ const displayRows = computed(() => {
         cmp = (a.impact_factor ?? -1) - (b.impact_factor ?? -1);
         break;
       case 'quartile':
-        cmp = (a.quartile ?? '未知').localeCompare(b.quartile ?? '未知');
+        cmp = displayQuartile(a.quartile).localeCompare(displayQuartile(b.quartile));
         break;
       case 'title':
         cmp = a.title.localeCompare(b.title);
@@ -139,7 +142,7 @@ function abstractPreview(text: string | null | undefined, max = 300): string {
               >
                 <td>{{ r.year ?? '—' }}</td>
                 <td class="num">{{ r.impact_factor?.toFixed(2) ?? '—' }}</td>
-                <td>{{ r.quartile ?? '未知' }}</td>
+                <td>{{ displayQuartile(r.quartile) }}</td>
                 <td class="mono">
                   <a
                     :href="`https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/`"
@@ -257,8 +260,12 @@ function abstractPreview(text: string | null | undefined, max = 300): string {
   }
 
   tbody tr.highlight td {
-    background: rgba(46, 125, 50, 0.12);
-    box-shadow: inset 3px 0 0 var(--success);
+    background: var(--row-highlight-bg);
+    box-shadow: inset 0 0 0 1px var(--row-highlight-border);
+  }
+
+  tbody tr.highlight .title {
+    font-weight: 600;
   }
 }
 

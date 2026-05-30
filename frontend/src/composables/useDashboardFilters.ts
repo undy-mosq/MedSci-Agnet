@@ -1,8 +1,9 @@
-/** [2026-05-18] 仪表盘年份/分区筛选与文献过滤。 */
+/** [2026-05-19] 分区筛选；NA 与 null 均视为「未知」。 */
 
 import { computed, ref } from 'vue';
 
 import type { ArticleItem } from '@/api/analyze';
+import { quartileGroupKey } from '@/utils/quartileDisplay';
 
 export interface DashboardFilterState {
   yearRange: [number, number] | null;
@@ -37,8 +38,8 @@ export function useDashboardFilters() {
   function filterArticles(articles: ArticleItem[]): ArticleItem[] {
     return articles.filter((a) => {
       if (quartile.value != null) {
-        const q = a.quartile ?? '未知';
-        if (q !== quartile.value) {
+        const q = quartileGroupKey(a.quartile);
+        if (q !== quartileGroupKey(quartile.value)) {
           return false;
         }
       }

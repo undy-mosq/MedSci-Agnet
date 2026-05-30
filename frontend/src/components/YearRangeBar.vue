@@ -1,4 +1,4 @@
-<!-- [2026-05-18] 图表区顶部公共年份双端拉条，与 useDashboardFilters 同步。 -->
+<!-- [2026-05-18] 单轨道双拇指年份区间拉条。 -->
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
@@ -13,20 +13,34 @@ const emit = defineEmits<{
 
 const startIdx = ref(0);
 const endIdx = ref(0);
+const activeThumb = ref<'start' | 'end'>('end');
 
 const maxIdx = computed(() => Math.max(0, props.years.length - 1));
+
+const lowIdx = computed(() => Math.min(startIdx.value, endIdx.value));
+const highIdx = computed(() => Math.max(startIdx.value, endIdx.value));
+
+const fillStyle = computed(() => {
+  if (maxIdx.value <= 0) {
+    return { left: '0%', width: '100%' };
+  }
+  const left = (lowIdx.value / maxIdx.value) * 100;
+  const right = (highIdx.value / maxIdx.value) * 100;
+  return {
+    left: `${left}%`,
+    width: `${right - left}%`,
+  };
+});
 
 const labelText = computed(() => {
   if (!props.years.length) {
     return '';
   }
-  const i0 = Math.min(startIdx.value, endIdx.value);
-  const i1 = Math.max(startIdx.value, endIdx.value);
-  return `${props.years[i0]} – ${props.years[i1]}`;
+  return `${props.years[lowIdx.value]} – ${props.years[highIdx.value]}`;
 });
 
 const isFullRange = computed(
-  () => startIdx.value === 0 && endIdx.value === maxIdx.value && maxIdx.value > 0,
+  () => lowIdx.value === 0 && highIdx.value === maxIdx.value && maxIdx.value > 0,
 );
 
 /** 函数功能：将 modelValue 同步到拉条索引。
@@ -71,19 +85,20 @@ function emitRange() {
   if (!props.years.length) {
     return;
   }
-  const i0 = Math.min(startIdx.value, endIdx.value);
-  const i1 = Math.max(startIdx.value, endIdx.value);
-  if (i0 === 0 && i1 === maxIdx.value) {
+  if (lowIdx.value === 0 && highIdx.value === maxIdx.value) {
     emit('year-range', null);
     return;
   }
-  const y0 = parseInt(props.years[i0]!, 10);
-  const y1 = parseInt(props.years[i1]!, 10);
+  const y0 = parseInt(props.years[lowIdx.value]!, 10);
+  const y1 = parseInt(props.years[highIdx.value]!, 10);
   if (Number.isFinite(y0) && Number.isFinite(y1)) {
     emit('year-range', [Math.min(y0, y1), Math.max(y0, y1)]);
   }
 }
 
+/** 函数功能：拖动起始拇指并约束区间。
+ *  输入说明：ev 为 range input 事件。
+ *  输出说明：无。 */
 function onStartInput(ev: Event) {
   const v = parseInt((ev.target as HTMLInputElement).value, 10);
   startIdx.value = v;
@@ -93,6 +108,9 @@ function onStartInput(ev: Event) {
   emitRange();
 }
 
+/** 函数功能：拖动结束拇指并约束区间。
+ *  输入说明：ev 为 range input 事件。
+ *  输出说明：无。 */
 function onEndInput(ev: Event) {
   const v = parseInt((ev.target as HTMLInputElement).value, 10);
   endIdx.value = v;
@@ -132,29 +150,32 @@ watch(
       <span class="bar-value" :class="{ muted: isFullRange }">{{ labelText }}</span>
       <span v-if="isFullRange" class="bar-hint muted">（全部年份）</span>
     </div>
-    <div class="bar-sliders">
-      <label class="slider-label">
-        <span class="sr-only">起始年份</span>
-        <input
-          type="range"
-          class="range range-start"
-          :min="0"
-          :max="maxIdx"
-          :value="startIdx"
-          @input="onStartInput"
-        />
-      </label>
-      <label class="slider-label">
-        <span class="sr-only">结束年份</span>
-        <input
-          type="range"
-          class="range range-end"
-          :min="0"
-          :max="maxIdx"
-          :value="endIdx"
-          @input="onEndInput"
-        />
-      </label>
+    <div class="dual-range">
+      <div class="track">
+        <div class="track-fill" :style="fillStyle" />
+      </div>
+      <input
+        type="range"
+        class="thumb thumb-start"
+        :class="{ 'thumb-active': activeThumb === 'start' }"
+        :min="0"
+        :max="maxIdx"
+        :value="startIdx"
+        aria-label="起始年份"
+        @pointerdown="activeThumb = 'start'"
+        @input="onStartInput"
+      />
+      <input
+        type="range"
+        class="thumb thumb-end"
+        :class="{ 'thumb-active': activeThumb === 'end' }"
+        :min="0"
+        :max="maxIdx"
+        :value="endIdx"
+        aria-label="结束年份"
+        @pointerdown="activeThumb = 'end'"
+        @input="onEndInput"
+      />
       <div class="tick-labels">
         <span>{{ years[0] }}</span>
         <span>{{ years[maxIdx] }}</span>
@@ -173,7 +194,7 @@ watch(
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem 0.65rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
 }
 
 .bar-title {
@@ -198,40 +219,103 @@ watch(
   font-size: var(--text-xs);
 }
 
-.bar-sliders {
+.dual-range {
   position: relative;
-  padding: 0.25rem 0 1.25rem;
+  height: 28px;
+  margin: 0 2px 1.1rem;
 }
 
-.slider-label {
-  display: block;
-  margin: 0.15rem 0;
-}
-
-.range {
-  width: 100%;
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   height: 6px;
-  accent-color: var(--accent);
-  cursor: pointer;
+  border-radius: 3px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+.track-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    background: transparent;
+    border: none;
+  }
+
+  &::-moz-range-track {
+    height: 6px;
+    background: transparent;
+    border: none;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 16px;
+    height: 16px;
+    margin-top: -5px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--accent);
+    box-shadow: 0 1px 4px rgba(38, 50, 56, 0.25);
+    cursor: grab;
+  }
+
+  &::-moz-range-thumb {
+    pointer-events: auto;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--accent);
+    box-shadow: 0 1px 4px rgba(38, 50, 56, 0.25);
+    cursor: grab;
+  }
+
+  &.thumb-active {
+    z-index: 3;
+  }
+
+  &.thumb-start {
+    z-index: 1;
+  }
+
+  &.thumb-end {
+    z-index: 2;
+  }
 }
 
 .tick-labels {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.1rem;
   display: flex;
   justify-content: space-between;
   font-size: var(--text-xs);
   color: var(--muted);
-  margin-top: 0.15rem;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  pointer-events: none;
 }
 
 .muted {

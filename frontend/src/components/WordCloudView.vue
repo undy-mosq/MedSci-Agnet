@@ -1,4 +1,6 @@
 <!-- [2026-05-18] 词云点击 emit、Top20 词条列表。 -->
+<!-- [2026-05-19] 再次点击同一词取消高亮，emit null。 -->
+<!-- [2026-05-19] 受控选中、词频指纹跳过重绘、Resize 防抖。 -->
 <script setup lang="ts">
 import WordCloud from 'wordcloud';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
@@ -8,14 +10,17 @@ import { wordcloudColor } from '@/utils/chartPalette';
 
 const props = defineProps<{
   items: WordCloudItem[];
+  selectedWord?: string | null;
 }>();
 
 const emit = defineEmits<{
-  'word-click': [word: string];
+  'word-click': [word: string | null];
 }>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let ro: ResizeObserver | null = null;
+let lastFingerprint = '';
+let resizeTimer: ReturnType<typeof setTimeout> | null = null;
 
 const topList = computed(() => {
   if (!props.items.length) {
@@ -32,7 +37,12 @@ const topList = computed(() => {
     }));
 });
 
-const selectedWord = ref<string | null>(null);
+/** 函数功能：生成词云词频指纹，用于判断是否需要重绘 canvas。
+ *  输入说明：items 为词云数据。
+ *  输出说明：指纹字符串。 */
+function wordcloudFingerprint(items: WordCloudItem[]): string {
+  return items.map((w) => `${w.word}:${w.weight}`).join('|');
+}
 
 /** 函数功能：在 canvas 上绘制词云。
  *  输入说明：无（读 props.items）。
@@ -65,19 +75,46 @@ function draw() {
   });
 }
 
-/** 函数功能：选中词条并通知父组件。
+/** 函数功能：防抖触发词云重绘。
+ *  输入说明：无。
+ *  输出说明：无。 */
+function scheduleDraw() {
+  if (resizeTimer != null) {
+    clearTimeout(resizeTimer);
+  }
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null;
+    draw();
+  }, 150);
+}
+
+/** 函数功能：词频变化时重绘；指纹不变则跳过。
+ *  输入说明：items 为当前词云列表。
+ *  输出说明：无。 */
+function redrawIfFingerprintChanged(items: WordCloudItem[]) {
+  const fp = wordcloudFingerprint(items);
+  if (fp === lastFingerprint) {
+    return;
+  }
+  lastFingerprint = fp;
+  nextTick(() => draw());
+}
+
+/** 函数功能：选中或取消词条并通知父组件。
  *  输入说明：word 为词语文本。
  *  输出说明：无。 */
 function onWordSelect(word: string) {
-  selectedWord.value = word;
+  if (props.selectedWord === word) {
+    emit('word-click', null);
+    return;
+  }
   emit('word-click', word);
 }
 
 watch(
   () => props.items,
-  () => {
-    selectedWord.value = null;
-    nextTick(() => draw());
+  (items) => {
+    redrawIfFingerprintChanged(items);
   },
   { deep: true },
 );
@@ -85,13 +122,16 @@ watch(
 watch(canvasRef, (el) => {
   if (el?.parentElement) {
     ro?.disconnect();
-    ro = new ResizeObserver(() => draw());
+    ro = new ResizeObserver(() => scheduleDraw());
     ro.observe(el.parentElement);
   }
 });
 
 onBeforeUnmount(() => {
   ro?.disconnect();
+  if (resizeTimer != null) {
+    clearTimeout(resizeTimer);
+  }
 });
 </script>
 
@@ -200,7 +240,8 @@ onBeforeUnmount(() => {
     }
 
     &.active td {
-      background: var(--accent-soft);
+      background: var(--row-highlight-bg);
+      box-shadow: inset 0 0 0 1px var(--row-highlight-border);
       font-weight: 600;
     }
   }

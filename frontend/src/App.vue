@@ -1,6 +1,9 @@
-<!-- [2026-05-18] 筛选联动、articles 下传、顶栏副标题、骨架加载、pill Tab。 -->
+<!-- [2026-05-19] Top100 不足 100 条时显示语料说明。 -->
+<!-- [2026-05-19] MedSci 补全提示移入结果区，与图表并列展示。 -->
+<!-- [2026-05-19] 词云再次点击取消 Top100 高亮；新检索清空 highlightWord。 -->
+<!-- [2026-05-19] 仅 onSearch 清选中/筛选；MedSci 补全不打断高亮。 -->
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 import SearchBar from '@/components/SearchBar.vue';
 import StatsCharts from '@/components/StatsCharts.vue';
@@ -13,8 +16,15 @@ import { useDashboardFilters } from '@/composables/useDashboardFilters';
 const ANALYZE_MAX_RESULTS = 500;
 
 const tab = ref<'dashboard' | 'review'>('dashboard');
-const { loading, error, result, reviewLoading, reviewError, runAnalyze } =
-  useAnalyze();
+const {
+  loading,
+  enrichingMetrics,
+  error,
+  result,
+  reviewLoading,
+  reviewError,
+  runAnalyze,
+} = useAnalyze();
 
 const {
   yearRange,
@@ -28,11 +38,7 @@ const {
 } = useDashboardFilters();
 
 const wordHint = ref<string | null>(null);
-
-watch(result, () => {
-  clearFilters();
-  wordHint.value = null;
-});
+const highlightWord = ref<string | null>(null);
 
 const filteredArticles = computed(() => {
   if (!result.value?.articles) {
@@ -48,9 +54,10 @@ const filteredTop100 = computed(() => {
   return filterArticles(result.value.top100_if_5y);
 });
 
-const highlightWord = ref<string | null>(null);
-
 function onSearch(q: string) {
+  clearFilters();
+  wordHint.value = null;
+  highlightWord.value = null;
   runAnalyze(q, ANALYZE_MAX_RESULTS);
 }
 
@@ -62,8 +69,15 @@ function onYearRange(range: [number, number] | null) {
   setYearRange(range);
 }
 
-function onWordClick(word: string) {
+/** 函数功能：词云/词条表点击高亮 Top100，再次点击取消。
+ *  输入说明：word 为选中词，null 表示取消。
+ *  输出说明：无。 */
+function onWordClick(word: string | null) {
   highlightWord.value = word;
+  if (!word) {
+    wordHint.value = null;
+    return;
+  }
   const lower = word.toLowerCase();
   const hits = filteredTop100.value.filter(
     (r) =>
@@ -73,7 +87,7 @@ function onWordClick(word: string) {
   if (!hits.length) {
     wordHint.value = `词「${word}」在近 5 年 Top100 当前视图中无匹配标题/摘要。`;
   } else {
-    wordHint.value = `词「${word}」匹配 ${hits.length} 条 Top100 记录（已高亮）。`;
+    wordHint.value = `词「${word}」匹配 ${hits.length} 条 Top100 记录（已高亮，再次点击可取消）。`;
   }
 }
 </script>
@@ -106,11 +120,24 @@ function onWordClick(word: string) {
         <p class="loading-desc">正在检索并分析文献，请稍候…</p>
       </div>
 
-      <div v-else-if="result && !result.stats.analyzed_count" class="empty panel">
+      <div
+        v-if="!loading && result && !result.stats.analyzed_count"
+        class="empty panel"
+      >
         未检索到文献，请调整关键词后重试。
       </div>
 
-      <template v-else-if="result">
+      <template v-if="!loading && result">
+        <div
+          v-if="enrichingMetrics"
+          class="enrich-hint panel"
+          aria-live="polite"
+        >
+          <p class="loading-desc">
+            正在从 MedSci 补全未知期刊指标，图表将随补全结果更新…
+          </p>
+        </div>
+
         <nav class="tabs panel" aria-label="分析视图">
           <button
             type="button"
@@ -154,13 +181,35 @@ function onWordClick(word: string) {
           />
           <div class="block">
             <h2 class="section-heading">词云</h2>
-            <p class="block-hint muted">词云基于全量语料；点击词条可高亮 Top100 表格</p>
-            <WordCloudView :items="result.wordcloud" @word-click="onWordClick" />
+            <p class="block-hint muted">
+              词云基于全量语料；点击词条可高亮 Top100 表格，再次点击可取消
+            </p>
+            <WordCloudView
+              :items="result.wordcloud"
+              :selected-word="highlightWord"
+              @word-click="onWordClick"
+            />
             <p v-if="wordHint" class="toast-hint">{{ wordHint }}</p>
           </div>
           <div class="block">
-            <h2 class="section-heading">近 5 年高影响因子文献（Top100）</h2>
-            <p v-if="hasActiveFilters" class="block-hint muted">
+            <h2 class="section-heading">
+              近 5 年高影响因子文献（Top100）
+              <span
+                v-if="result.top100_if_5y.length < 100"
+                class="heading-count"
+              >
+                （共 {{ result.top100_if_5y.length }} 条）
+              </span>
+            </h2>
+            <p
+              v-if="result.top100_if_5y.length < 100 && !hasActiveFilters"
+              class="block-hint muted"
+            >
+              当前检索已分析 {{ result.stats.analyzed_count }} 篇，其中近 5 年文献
+              {{ result.top100_if_5y.length }} 篇；Top100 展示全部可得结果（PubMed
+              单次最多拉取 500 条）。
+            </p>
+            <p v-else-if="hasActiveFilters" class="block-hint muted">
               筛选后 {{ filteredTop100.length }} / {{ result.top100_if_5y.length }} 条
             </p>
             <Top100Table
@@ -179,7 +228,7 @@ function onWordClick(word: string) {
         </section>
       </template>
 
-      <div v-else class="placeholder panel">
+      <div v-if="!loading && !result" class="placeholder panel">
         输入检索式并点击「分析」，结果将显示在此处。
       </div>
     </main>
@@ -302,6 +351,12 @@ function onWordClick(word: string) {
   margin: 0;
   font-size: var(--text-base);
   color: var(--muted);
+}
+
+.enrich-hint {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent, #1976d2);
 }
 
 .empty,

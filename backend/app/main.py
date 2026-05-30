@@ -26,7 +26,6 @@ app.add_middleware(
 
 app.include_router(analyze_router)
 
-
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """健康检查。

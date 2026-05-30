@@ -37,14 +37,16 @@ function onSubmit() {
     <details class="usage-details">
       <summary>使用说明</summary>
       <p class="hint">
-        数据来自 NCBI E-utilities；影响因子与 JCR 分区来自
+        数据来自 NCBI E-utilities；首轮使用
         <a
           class="link-map"
           href="/journal-metrics.html"
           target="_blank"
           rel="noopener noreferrer"
           >本地映射表</a
-        >，未命中期刊显示为未知。每次分析固定检索
+        >
+        中的影响因子与中科院大类分区。未命中期刊将自动从 MedSci 补全（约 10
+        本/批同步，其余后台增量更新）。每次分析固定检索
         <strong>500</strong> 条文献；综述（LLM）仅依据近 5 年高影响因子排序后的 Top100
         题录生成，与下方「近 5 年高影响因子文献」表一致。
       </p>

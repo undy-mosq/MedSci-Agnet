@@ -1,6 +1,7 @@
-/** [2026-05-18] 语料统计与 Top100；主流程在 useAnalyze 中于 analyze 响应后调用。 */
+/** [2026-05-19] 语料统计；NA 在统计中并入「未知」。 */
 
 import type { ArticleItem, CorpusStats, IfSummary } from '@/api/analyze';
+import { quartileGroupKey } from '@/utils/quartileDisplay';
 
 function currentUtcYear(): number {
   return new Date().getUTCFullYear();
@@ -24,7 +25,7 @@ export function buildCorpusStats(
   let matched = 0;
 
   for (const a of articles) {
-    const q = a.quartile ?? '未知';
+    const q = quartileGroupKey(a.quartile);
     quartileCounts[q] = (quartileCounts[q] ?? 0) + 1;
     if (a.year != null) {
       const yk = String(a.year);
